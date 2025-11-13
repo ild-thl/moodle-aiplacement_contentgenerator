@@ -90,19 +90,24 @@ if ($mform->is_cancelled()) {
         $mods[$mod[0].'_'.$mod[1]][] = explode('_', $key)[2];
     }
   }
+  // Todo: implement processing of selected mods to generate source text
 
   $pdfimages = [];
   if (!empty($fromform->pdfimages)) {
         $pdfimages = json_decode($fromform->pdfimages, true);
-        foreach ($pdfimages as $fileid => $images) {
-          foreach ($images as $image) {
-            // $image is a base64 encoded image string that shows one page of the pdf
-            //echo '<img src="'.$image.'" alt="PDF-Seite" height="300px"/>';
-            $result = \aiplacement_contentgenerator\placement::process_pdf($image, $fromform->additional_instructions);
-            print_object($result);
-            // Todo: generate content from $result
-          }
-        }
+        $additionalinstructions = $fromform->additional_instructions;
+
+        // instanciate ad hoc task to process the pdf images in background
+        $generatecontenttask = \aiplacement_contentgenerator\task\generate_content::instance(
+            $pdfimages,
+            $additionalinstructions
+        );
+        $generatecontenttask->set_userid($USER->id);
+        
+        \core\task\manager::queue_adhoc_task($generatecontenttask);
+
+        echo $OUTPUT->notification(get_string('generation_started', 'aiplacement_contentgenerator'), 'notifysuccess');
+        echo $OUTPUT->continue_button(new moodle_url('/course/view.php', ['id' => $course->id]));
   }
   
 } else {
