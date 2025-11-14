@@ -19,7 +19,7 @@ namespace aiplacement_contentgenerator;
 use core_ai\manager;
 
 /**
- * AI Placement HTML editor utils.
+ * AI Placement HTML contentgenerator utils.
  *
  * @package    aiplacement_contentgenerator
  * @copyright  2025 Jan Rieger <jan.rieger@th-luebeck.de>
@@ -28,26 +28,26 @@ use core_ai\manager;
 class utils {
 
     // /**
-    //  * Check if AI Placement HTML editor action is available for the context.
+    //  * Check if AI Placement HTML contentgenerator action is available for the context.
     //  *
     //  * @param \context $context The context.
     //  * @param string $actionname The name of the action.
     //  * @param string $actionclass The class name of the action.
     //  * @return bool True if the action is available, false otherwise.
     //  */
-    // public static function is_html_editor_placement_action_available(
+    // public static function is_html_contentgenerator_placement_action_available(
     //     \context $context,
     //     string $actionname,
     //     string $actionclass
     // ): bool {
-    //     [$plugintype, $pluginname] = explode('_', \core_component::normalize_componentname('aiplacement_editor'), 2);
+    //     [$plugintype, $pluginname] = explode('_', \core_component::normalize_componentname('aiplacement_contentgenerator'), 2);
     //     $manager = \core_plugin_manager::resolve_plugininfo_class($plugintype);
 
     //     if ($manager::is_plugin_enabled($pluginname)) {
     //         if (
-    //             has_capability("aiplacement/editor:{$actionname}", $context)
+    //             has_capability("aiplacement/contentgenerator:{$actionname}", $context)
     //             && manager::is_action_available($actionclass)
-    //             && manager::is_action_enabled('aiplacement_editor', $actionclass)
+    //             && manager::is_action_enabled('aiplacement_contentgenerator', $actionclass)
     //         ) {
     //             return true;
     //         }

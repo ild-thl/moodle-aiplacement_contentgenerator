@@ -25,11 +25,14 @@
 $string['additional_instructions'] = 'Additional instructions for content generation';
 $string['additional_instructions_default'] = 'Extract the text from the above document as if you were reading it naturally. Return the tables in html format. Return the equations in LaTeX representation. If there is an image in the document and image caption is not present, add a small description of the image inside the <img></img> tag; otherwise, add the image caption inside <img></img>. Watermarks should be wrapped in brackets. Ex: <watermark>OFFICIAL COPY</watermark>. Page numbers should be wrapped in brackets. Ex: <page_number>14</page_number> or <page_number>9/22</page_number>. Prefer using ☐ and ☑ for check boxes.';
 $string['generatecontent'] = 'Generate AI content';
-$string['generation_started'] = 'Content generation has been started. You will be notified once it is complete. You can continue working in the course meanwhile by clicking the continue button below.';
+$string['generation_started'] = 'Content generation has been started. You will be notified by e-mail once it is complete. You can continue working in the course meanwhile by clicking the continue button below.';
 $string['error_nocontentselected'] = 'Please select at least one content module for generation.';
 $string['extract_pdf'] = 'Extract PDF content';
 $string['extract_pdf_setting'] = 'Enable PDF content extraction';
 $string['extract_pdf_setting_desc'] = 'If enabled, users can extract text content from PDF files using AI.';
+$string['mail_content_generated_subject'] = 'Your AI content generation is complete';
+$string['mail_content_generated_message'] = 'The AI content generation for your course has been completed. You can view the generated content by visiting the course page: {$a->courselink}';
+$string['mail_content_generated_messagehtml'] = '<p>The AI content generation for your course has been completed.</p><p>You can view the generated content by visiting the course page: <a href="{$a->courselink}">Course Page</a></p>';
 $string['modselection'] = 'Select PDF content for content generation';
 $string['pluginname'] = 'Generate content placement';
 $string['privacy:metadata'] = 'The Generate content placement plugin does not store any personal data.';

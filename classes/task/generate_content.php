@@ -28,11 +28,13 @@ class generate_content extends \core\task\adhoc_task {
     public static function instance(
         mixed $pdfimages,
         string $additionalinstructions,
+        int $courseid
     ): self {
         $task = new self();
         $task->set_custom_data((object) [
             'pdfimages' => $pdfimages,
             'additionalinstructions' => $additionalinstructions,
+            'courseid' => $courseid,
         ]);
 
         return $task;
@@ -54,8 +56,19 @@ class generate_content extends \core\task\adhoc_task {
             $result = \aiplacement_contentgenerator\placement::process_pdf($image, $data->additionalinstructions);
             mtrace('Page '.$i.' processed. Success: '.$result['success'].' Error: '.$result['error']);
             // Todo: generate content from $result
+            
+            // Send E-Mail to inform user about completed processing
+            $courseid = $data->courseid;
+            $recipient = \core_user::get_user($this->get_userid());
+            $sender    = \core_user::get_support_user();
 
-            // Todo: inform user about completed processing
+            $subject = get_string('mail_content_generated_subject', 'aiplacement_contentgenerator');
+            $message = get_string('mail_content_generated_message', 'aiplacement_contentgenerator', 
+                array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
+            $messagehtml = get_string('mail_content_generated_messagehtml', 'aiplacement_contentgenerator', 
+                array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
+
+            email_to_user($recipient, $sender, $subject, $message, $messagehtml);
           }
         }
 

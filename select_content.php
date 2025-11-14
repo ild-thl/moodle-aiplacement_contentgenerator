@@ -100,7 +100,8 @@ if ($mform->is_cancelled()) {
         // instanciate ad hoc task to process the pdf images in background
         $generatecontenttask = \aiplacement_contentgenerator\task\generate_content::instance(
             $pdfimages,
-            $additionalinstructions
+            $additionalinstructions,
+            $course->id
         );
         $generatecontenttask->set_userid($USER->id);
         
