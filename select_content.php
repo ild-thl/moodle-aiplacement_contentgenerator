@@ -84,14 +84,25 @@ else if ($fromform) {
   echo $OUTPUT->header();
   // generate sourcetext from course mods if checked in form
   $mods = [];
+  $mods2 = [];
   foreach ($fromform as $key => $value) {
     if (preg_match('/^mod_\w+_\d+$/', $key) && $value) {
         // activated checkbox
         $mod = explode('_', $key);
-        $mods[$mod[0].'_'.$mod[1]][] = explode('_', $key)[2];
+        //$mods[$mod[0].'_'.$mod[1]][$mod[2]] = $mod[3];
+        $mods[] = (object) [
+            'name' => $mod[0].'_'.$mod[1],
+            'fileid' => $mod[3]
+        ];
     }
   }
   // Todo: implement processing of selected mods to generate source text
+  // get_sourcetexts aus helper aufrufen
+  // $mods in richtes Format bringen
+  // keine PDFS übergeben (auch in helper anpassen)
+  // Inhalte der mods ebenfalls an Task übergeben
+  // Task erst aufrufen, wenn alle Daten vorliegen aus allen mods 
+  print_object($mods);die(); // Debug remove later
 
   $pdfimages = [];
   if (!empty($fromform->pdfimages)) {

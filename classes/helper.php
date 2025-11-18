@@ -44,7 +44,7 @@ class helper {
                 $mod->name = 'mod_label';
                 $mod->id = $label->id;
                 $mod->title = $title;
-                $mod->fileid = 0;
+                $mod->fileid = $mod->id;
                 $mod->filemimetype = 'text/html';
 
                 $mods[] = $mod;
@@ -61,7 +61,7 @@ class helper {
                 $mod->name = 'mod_page';
                 $mod->id = $page->id;
                 $mod->title = $title;
-                $mod->fileid = 0;
+                $mod->fileid = $mod->id;
                 $mod->filemimetype = 'text/html';
 
                 $mods[] = $mod;

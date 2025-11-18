@@ -42,7 +42,7 @@ class generate_form extends moodleform {
         foreach ($mods as $mod) {
             $attrs = [
                 'data-fileid' => $mod->fileid,
-                'data-mimetype' => $mod->filemimetype,
+                'data-mimetype' => $mod->filemimetype, // will be checked in js
             ];
             // if file is pdf
             if ($mod->filemimetype == 'application/pdf') {
