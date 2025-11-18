@@ -76,7 +76,8 @@ if ($mform->is_cancelled()) {
 
   redirect($CFG->wwwroot . "/course/view.php?id=" . $course->id);
   
-} else if ($fromform) {
+} 
+else if ($fromform) {
   // The form was submitted
 
   $PAGE->set_heading(get_string('generatecontent', 'aiplacement_contentgenerator'));
@@ -111,7 +112,8 @@ if ($mform->is_cancelled()) {
         echo $OUTPUT->continue_button(new moodle_url('/course/view.php', ['id' => $course->id]));
   }
   
-} else {
+} 
+else {
   
   // If the course id isn't set and data wasn't actually passed, redirect to course. Somebody went to this page directly, I guess
   if ($courseid === 1 && (!$fromform && !file_get_contents('php://input'))) {

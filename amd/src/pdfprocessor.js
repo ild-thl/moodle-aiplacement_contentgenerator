@@ -21,38 +21,6 @@
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-// import * as pdfjsLib from './pdfjs/pdf.mjs';
-
-// export const init = () => {
-
-//     pdfjsLib.GlobalWorkerOptions.workerSrc = M.cfg.wwwroot + '/ai/placement/contentgenerator/amd/src/pdfjs/pdf.worker.mjs';
-
-//     document.querySelectorAll('input[type="checkbox"][name^="mod_"]').forEach(box => {
-//         box.addEventListener('change', async e => {
-//             if (!e.target.checked) return;
-//             const fileid = e.target.name.split('_').pop();
-
-//             // PDF laden (via File-URL aus PHP über data-Attribut)
-//             const url = e.target.dataset.url;
-//             const pdf = await pdfjsLib.getDocument(url).promise;
-
-//             for (let i = 1; i <= pdf.numPages; i++) {
-//                 const page = await pdf.getPage(i);
-//                 const viewport = page.getViewport({ scale: 1.5 });
-//                 const canvas = document.createElement('canvas');
-//                 const ctx = canvas.getContext('2d');
-//                 canvas.width = viewport.width;
-//                 canvas.height = viewport.height;
-//                 await page.render({ canvasContext: ctx, viewport }).promise;
-//                 const img = canvas.toDataURL('image/png');
-//                 // z. B. an dein Formular anhängen oder AJAX-Upload
-//                 console.log('Seite', i, img.slice(0, 50) + '...');
-//             }
-//         });
-//     });
-// };
-
-
 import * as pdfjsLib from './pdfjs/pdf.mjs';
 
 export const init = () => {
@@ -93,6 +61,10 @@ export const init = () => {
 
         // Gesamtseiten zählen für Fortschritt
         for (const box of checkboxes) {
+            const mimetype = box.dataset.mimetype;
+            if (mimetype !== 'application/pdf') {
+                continue; // Nur PDFs zählen
+            }
             const url = box.dataset.url;
             const pdf = await pdfjsLib.getDocument(url).promise;
             totalPages += pdf.numPages;
@@ -101,6 +73,10 @@ export const init = () => {
         let processedPages = 0;
 
         for (const box of checkboxes) {
+            const mimetype = box.dataset.mimetype;
+            if (mimetype !== 'application/pdf') {
+                continue; // Nur PDFs verarbeiten
+            }
             const fileid = box.name.split('_').pop();
             const url = box.dataset.url;
             const pdf = await pdfjsLib.getDocument(url).promise;

@@ -76,11 +76,13 @@ class helper {
                 $fileid = 0;
                 $contextid = 0;
                 $filename = '';
+                $filemimetype = '';
                 if ($files = $this->get_resource_files($resource->id)) {
                     foreach ($files as $file) {
                         $fileid = $file->get_id();
                         $contextid = $file->get_contextid();
                         $filename = $file->get_filename();
+                        $filemimetype = $file->get_mimetype();
                         break;
                     }
                 }
@@ -92,6 +94,7 @@ class helper {
                 $mod->title = $title;
                 $mod->fileid = $fileid;
                 $mod->filename = $filename;
+                $mod->filemimetype = $filemimetype;
 
                 $mods[] = $mod;
             }
@@ -123,6 +126,7 @@ class helper {
                         $mod->title = $title;
                         $mod->fileid = $file->get_id();
                         $mod->filename = $file->get_filename();
+                        $mod->filemimetype = $file->get_mimetype();
 
                         $mods[] = $mod;
                     }

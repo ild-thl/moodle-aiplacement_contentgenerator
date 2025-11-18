@@ -51,9 +51,14 @@ class generate_form extends moodleform {
             );
 
             $attrs = [
-                'data-url' => $fileurl->out(false),
                 'data-fileid' => $mod->fileid,
+                'data-mimetype' => $mod->filemimetype,
             ];
+            // if file is pdf
+            if ($mod->filemimetype == 'application/pdf') {
+                $attrs['data-url'] = $fileurl->out(false);
+            }
+
             $checkboxes[] = $mform->createElement('checkbox', $mod->name.'_fileid_'.$mod->fileid, '', $mod->title, $attrs);
         }
         $mform->addGroup($checkboxes, 'modgroup', get_string('modselection', 'aiplacement_contentgenerator'), '<br>', false);
