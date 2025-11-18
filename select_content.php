@@ -96,12 +96,12 @@ else if ($fromform) {
   $pdfimages = [];
   if (!empty($fromform->pdfimages)) {
         $pdfimages = json_decode($fromform->pdfimages, true);
-        $additionalinstructions = $fromform->additional_instructions;
+        //$additionalinstructions = $fromform->additional_instructions;
 
         // instanciate ad hoc task to process the pdf images in background
         $generatecontenttask = \aiplacement_contentgenerator\task\generate_content::instance(
             $pdfimages,
-            $additionalinstructions,
+            '',//$additionalinstructions,
             $course->id
         );
         $generatecontenttask->set_userid($USER->id);

@@ -40,22 +40,21 @@ class generate_form extends moodleform {
         $mods = $helper->get_mods_with_content($courseid);
         $checkboxes = [];
         foreach ($mods as $mod) {
-            // PDF-Datei-URL ermitteln
-            $fileurl = \moodle_url::make_pluginfile_url(
-                $mod->contextid,
-                $mod->name,
-                'content',
-                0,
-                '/',
-                $mod->filename
-            );
-
             $attrs = [
                 'data-fileid' => $mod->fileid,
                 'data-mimetype' => $mod->filemimetype,
             ];
             // if file is pdf
             if ($mod->filemimetype == 'application/pdf') {
+                // PDF-Datei-URL ermitteln
+                $fileurl = \moodle_url::make_pluginfile_url(
+                    $mod->contextid,
+                    $mod->name,
+                    'content',
+                    0,
+                    '/',
+                    $mod->filename
+                );
                 $attrs['data-url'] = $fileurl->out(false);
             }
 
@@ -63,9 +62,9 @@ class generate_form extends moodleform {
         }
         $mform->addGroup($checkboxes, 'modgroup', get_string('modselection', 'aiplacement_contentgenerator'), '<br>', false);
 
-        $mform->addElement('textarea', 'additional_instructions', get_string('additional_instructions', 'aiplacement_contentgenerator'),'wrap="virtual" rows="20" cols="50"');
-        $mform->setType('additional_instructions', PARAM_TEXT);
-        $mform->setDefault('additional_instructions', get_string('additional_instructions_default', 'aiplacement_contentgenerator'));
+        //$mform->addElement('textarea', 'additional_instructions', get_string('additional_instructions', 'aiplacement_contentgenerator'),'wrap="virtual" rows="20" cols="50"');
+        //$mform->setType('additional_instructions', PARAM_TEXT);
+        //$mform->setDefault('additional_instructions', get_string('additional_instructions_default', 'aiplacement_contentgenerator'));
 
         $mform->addElement('hidden', 'courseid', $courseid);
         $mform->setType('courseid', PARAM_INT);

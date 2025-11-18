@@ -34,35 +34,39 @@ class helper {
         
         $mods = array();
 
-        // // mod label
-        // if ($labels = $DB->get_records('label', array('course' => $courseid))) {
-        //     $icon = $OUTPUT->pix_icon('icon', '', 'mod_label');
-        //     foreach ($labels as $label) {
-        //         $title = \html_writer::div($icon . ' ' . $label->name);
+        // mod label
+        if ($labels = $DB->get_records('label', array('course' => $courseid))) {
+            $icon = $OUTPUT->pix_icon('icon', '', 'mod_label');
+            foreach ($labels as $label) {
+                $title = \html_writer::div($icon . ' ' . $label->name);
 
-        //         $mod = new stdClass();
-        //         $mod->name = 'mod_label';
-        //         $mod->id = $label->id;
-        //         $mod->title = $title;
+                $mod = new stdClass();
+                $mod->name = 'mod_label';
+                $mod->id = $label->id;
+                $mod->title = $title;
+                $mod->fileid = 0;
+                $mod->filemimetype = 'text/html';
 
-        //         $mods[] = $mod;
-        //     }
-        // }
+                $mods[] = $mod;
+            }
+        }
 
-        // // mod page
-        // if ($pages = $DB->get_records('page', array('course' => $courseid))) {
-        //     $icon = $OUTPUT->pix_icon('icon', '', 'mod_page');
-        //     foreach ($pages as $page) {
-        //         $title = \html_writer::div($icon . ' ' . $page->name);
+        // mod page
+        if ($pages = $DB->get_records('page', array('course' => $courseid))) {
+            $icon = $OUTPUT->pix_icon('icon', '', 'mod_page');
+            foreach ($pages as $page) {
+                $title = \html_writer::div($icon . ' ' . $page->name);
 
-        //         $mod = new stdClass();
-        //         $mod->name = 'mod_page';
-        //         $mod->id = $page->id;
-        //         $mod->title = $title;
+                $mod = new stdClass();
+                $mod->name = 'mod_page';
+                $mod->id = $page->id;
+                $mod->title = $title;
+                $mod->fileid = 0;
+                $mod->filemimetype = 'text/html';
 
-        //         $mods[] = $mod;
-        //     }
-        // }
+                $mods[] = $mod;
+            }
+        }
 
         // mod resource
         if ($resources = $DB->get_records('resource', array('course' => $courseid))) {
