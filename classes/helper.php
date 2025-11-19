@@ -83,11 +83,13 @@ class helper {
                 $filemimetype = '';
                 if ($files = $this->get_resource_files($resource->id)) {
                     foreach ($files as $file) {
-                        $fileid = $file->get_id();
-                        $contextid = $file->get_contextid();
-                        $filename = $file->get_filename();
-                        $filemimetype = $file->get_mimetype();
-                        break;
+                        if ($file->get_sortorder() == 1) {
+                            $fileid = $file->get_id();
+                            $contextid = $file->get_contextid();
+                            $filename = $file->get_filename();
+                            $filemimetype = $file->get_mimetype();
+                            break;
+                        }
                     }
                 }
 
@@ -142,30 +144,44 @@ class helper {
     }
 
     public function get_sourcetexts($mods) {
-        global $DB, $CFG;
+        global $DB;
         $sourcetexts = array();
-        foreach ($mods['mod_label'] as $labelid) {
-            if ($label = $DB->get_record('label', array('id' => $labelid))) {
-                $sourcetexts[] = $label->intro;
-            }
-        }
-        foreach ($mods['mod_page'] as $pageid) {
-            if ($page = $DB->get_record('page', array('id' => $pageid))) {
-                $sourcetexts[] = $page->content;
-            }
-        }
-        foreach ($mods['mod_folder'] as $fileid) {
-            if ($content = $this->get_text_from_file($fileid)) {
-                $sourcetexts[] = $content;
-            }
-        }
-        foreach ($mods['mod_resource'] as $resourceid) {
-            if ($files = $this->get_resource_files($resourceid)) {
-                foreach ($files as $file) {
-                    if ($sourcetext = $this->get_text_from_file($file->get_id())) {
-                        $sourcetexts[] = $sourcetext;
-                    }
+        if (isset($mods['mod_label'])) {
+            foreach ($mods['mod_label'] as $labelid) {
+                if ($label = $DB->get_record('label', array('id' => $labelid))) {
+                    $sourcetexts[] = $label->intro;
                 }
+            }
+        }
+        if (isset($mods['mod_page'])) {
+            foreach ($mods['mod_page'] as $pageid) {
+                if ($page = $DB->get_record('page', array('id' => $pageid))) {
+                    $sourcetexts[] = $page->content;
+                }
+            }
+        }
+        if (isset($mods['mod_folder'])) {
+            foreach ($mods['mod_folder'] as $fileid) {
+                if ($content = $this->get_text_from_file($fileid)) {
+                    $sourcetexts[] = $content;
+                }
+            }
+        }
+        if (isset($mods['mod_resource'])) {
+            foreach ($mods['mod_resource'] as $fileid) {
+                if ($content = $this->get_text_from_file($fileid)) {
+                    $sourcetexts[] = $content;
+                }
+                // if ($files = $this->get_resource_files($resourceid)) {
+                //     foreach ($files as $file) {
+                //         if ($file->get_mimetype() == 'application/pdf') {
+                //             continue;
+                //         }
+                //         if ($sourcetext = $this->get_text_from_file($file->get_id())) {
+                //             $sourcetexts[] = $sourcetext;
+                //         }
+                //     }
+                // }
             }
         }
         return $sourcetexts;
@@ -215,10 +231,10 @@ class helper {
      */
     public function is_allowed_text_mimetype($mimetype) {
         $allowedmimetypes = [
-            //'text/plain',
+            'text/plain',
             //'text/html',
             //'application/msword',
-            //'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
             //'application/vnd.ms-powerpoint',
             //'application/vnd.openxmlformats-officedocument.presentationml.presentation',
             //'application/vnd.oasis.opendocument.text',
@@ -251,12 +267,14 @@ class helper {
             if ($mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
                 return $this->get_text_from_word_document($file);
             }
+            // We don't process pdfs here
             // if ($mimetype === 'application/pdf') {
             //     return $this->get_text_from_pdf_document($file);
             // }
             if ($mimetype === 'text/plain') {
                 return $this->get_text_from_text_file($file);
             }
+            // Todo: add markdown and rtf processing here and allow mimetypes above
         }   
         return false;
     }

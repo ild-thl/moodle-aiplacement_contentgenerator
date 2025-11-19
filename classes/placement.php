@@ -41,13 +41,47 @@ class placement extends \core_ai\placement {
      * @param int $fileid Moodle file id (z. B. aus mdl_files)
      * @return array The extracted text content from the PDF.
      */
-    public static function process_pdf(string $imagebase64, string $additionalinstructions = ''): array {
+    public static function process_pdf(string $imagebase64): array {
         global $USER;
         
         // Prepare the action.
         $action = new \aiprovider_myai\aiactions\extract_pdf(
             userid: $USER->id,
             imagebase64: $imagebase64,
+            prompttext: '',
+            contextid: \context_system::instance()->id,
+        );
+
+        // Todo check user permission
+
+        // Send the action to the AI manager.
+        $manager = \core\di::get(\core_ai\manager::class);
+        $response = $manager->process_action($action);
+        // Return the response.
+        return [
+            'success' => $response->get_success(),
+            'generatedcontent' => $response->get_response_data()['generatedcontent'] ?? '',
+            'finishreason' => $response->get_response_data()['finishreason'] ?? '',
+            'errorcode' => $response->get_errorcode(),
+            'error' => $response->get_errormessage(),
+            'timecreated' => $response->get_timecreated(),
+            'prompttext' => '',
+        ];
+    }
+
+    /**
+     * Führt eine AI-Action 'generate_video' aus.
+     * 
+     * @param string $textcontent text content to generate video from
+     * @return array The generated video content.
+     */
+    public static function generate_video(string $textcontent, string $additionalinstructions): array {
+        global $USER;
+        
+        // Prepare the action.
+        $action = new \aiprovider_myai\aiactions\generate_video(
+            userid: $USER->id,
+            textcontent: $textcontent,
             prompttext: $additionalinstructions,
             contextid: \context_system::instance()->id,
         );

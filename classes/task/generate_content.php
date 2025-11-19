@@ -27,12 +27,14 @@ class generate_content extends \core\task\adhoc_task {
     
     public static function instance(
         mixed $pdfimages,
+        mixed $sourcetexts,
         string $additionalinstructions,
         int $courseid
     ): self {
         $task = new self();
         $task->set_custom_data((object) [
             'pdfimages' => $pdfimages,
+            'sourcetexts' => $sourcetexts,
             'additionalinstructions' => $additionalinstructions,
             'courseid' => $courseid,
         ]);
@@ -56,7 +58,7 @@ class generate_content extends \core\task\adhoc_task {
           foreach ($images as $image) {
             $i++;
             // $image is a base64 encoded image string that shows one page of the pdf
-            $result = \aiplacement_contentgenerator\placement::process_pdf($image, $data->additionalinstructions);
+            $result = \aiplacement_contentgenerator\placement::process_pdf($image);
             mtrace('Page '.$i.' processed.');
             mtrace('Success: '.$result['success']);
             //mtrace('Content: '.$result['generatedcontent']);
@@ -70,12 +72,36 @@ class generate_content extends \core\task\adhoc_task {
           }
         }
 
-        // Todo: generate (e.g. video-)content from $result
+        // Add other mod content here
+        $i = 0;
+        foreach ($data->sourcetexts as $text) {
+          $i++;
+          mtrace('Adding content from mod '.$i.'.');
+          $coursecontent .= $text."\n\n";
+          $results[] = 'Added content from mod.';
+        }
+
+        // Todo: generate Marp slides from $coursecontent
+        // e.g.: Erstelle mir 3 MARP Folien zu dem Thema ...
+        // use action: generate_text
+
+        // Todo: generate speaker text for each slide
+        // use action: generate_text
+
+        // Todo: generate audio from speaker text
+        // use new action: generate_audio with text-to-speech (https://wiki.mylab.th-luebeck.dev/de/myLab_services/ai_platform)
+        //$newcontent = \aiplacement_contentgenerator\placement::generate_video($coursecontent, $data->additionalinstructions);
+        //$results[] = 'Video generation success: '.$newcontent['success'].' Error: '.$newcontent['error'];
+
+        // Todo: create video from slides and audio
+        // use php library ffmpeg-php???
+
         // Send E-Mail to inform user about completed processing
         $courseid = $data->courseid;
         $recipient = \core_user::get_user($this->get_userid());
         $sender    = \core_user::get_support_user();
         $report = implode("\n", $results);
+        $report .= "\n\nAdditional Instructions:\n".$data->additionalinstructions;
         $report .= "\n\nGenerated Course Content:\n".$coursecontent;
 
         $subject = get_string('mail_content_generated_subject', 'aiplacement_contentgenerator');

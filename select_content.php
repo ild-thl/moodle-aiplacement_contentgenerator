@@ -84,44 +84,33 @@ else if ($fromform) {
   echo $OUTPUT->header();
   // generate sourcetext from course mods if checked in form
   $mods = [];
-  $mods2 = [];
   foreach ($fromform as $key => $value) {
     if (preg_match('/^mod_\w+_\d+$/', $key) && $value) {
         // activated checkbox
         $mod = explode('_', $key);
-        //$mods[$mod[0].'_'.$mod[1]][$mod[2]] = $mod[3];
-        $mods[] = (object) [
-            'name' => $mod[0].'_'.$mod[1],
-            'fileid' => $mod[3]
-        ];
+        $mods[$mod[0].'_'.$mod[1]][] = $mod[3];
     }
   }
-  // Todo: implement processing of selected mods to generate source text
-  // get_sourcetexts aus helper aufrufen
-  // $mods in richtes Format bringen
-  // keine PDFS übergeben (auch in helper anpassen)
-  // Inhalte der mods ebenfalls an Task übergeben
-  // Task erst aufrufen, wenn alle Daten vorliegen aus allen mods 
-  //print_object($mods);die(); // Debug remove later
 
+  $sourcetexts = $helper->get_sourcetexts($mods);
   $pdfimages = [];
-  if (!empty($fromform->pdfimages)) {
-        $pdfimages = json_decode($fromform->pdfimages, true);
-        //$additionalinstructions = $fromform->additional_instructions;
+  $pdfimages = json_decode($fromform->pdfimages, true);
+  $additionalinstructions = $fromform->additional_instructions;
 
-        // instanciate ad hoc task to process the pdf images in background
-        $generatecontenttask = \aiplacement_contentgenerator\task\generate_content::instance(
-            $pdfimages,
-            '',//$additionalinstructions,
-            $course->id
-        );
-        $generatecontenttask->set_userid($USER->id);
-        
-        \core\task\manager::queue_adhoc_task($generatecontenttask);
+  // instanciate ad hoc task to process the pdf images in background
+  $generatecontenttask = \aiplacement_contentgenerator\task\generate_content::instance(
+      $pdfimages,
+      $sourcetexts,
+      $additionalinstructions,
+      $course->id
+  );
+  $generatecontenttask->set_userid($USER->id);
+  
+  \core\task\manager::queue_adhoc_task($generatecontenttask);
 
-        echo $OUTPUT->notification(get_string('generation_started', 'aiplacement_contentgenerator'), 'notifysuccess');
-        echo $OUTPUT->continue_button(new moodle_url('/course/view.php', ['id' => $course->id]));
-  }
+  echo $OUTPUT->notification(get_string('generation_started', 'aiplacement_contentgenerator'), 'notifysuccess');
+  echo $OUTPUT->continue_button(new moodle_url('/course/view.php', ['id' => $course->id]));
+
   
 } 
 else {

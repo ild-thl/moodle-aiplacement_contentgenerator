@@ -62,8 +62,8 @@ class generate_form extends moodleform {
         }
         $mform->addGroup($checkboxes, 'modgroup', get_string('modselection', 'aiplacement_contentgenerator'), '<br>', false);
 
-        //$mform->addElement('textarea', 'additional_instructions', get_string('additional_instructions', 'aiplacement_contentgenerator'),'wrap="virtual" rows="20" cols="50"');
-        //$mform->setType('additional_instructions', PARAM_TEXT);
+        $mform->addElement('textarea', 'additional_instructions', get_string('additional_instructions', 'aiplacement_contentgenerator'),'wrap="virtual" rows="20" cols="50"');
+        $mform->setType('additional_instructions', PARAM_TEXT);
         //$mform->setDefault('additional_instructions', get_string('additional_instructions_default', 'aiplacement_contentgenerator'));
 
         $mform->addElement('hidden', 'courseid', $courseid);
