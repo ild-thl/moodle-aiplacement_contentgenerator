@@ -46,7 +46,10 @@ class generate_content extends \core\task\adhoc_task {
     public function execute() {
 
         $data = $this->get_custom_data();
+        $coursecontent = '';
+        $results = [];
 
+        // Process each PDF image
         foreach ($data->pdfimages as $fileid => $images) {
           mtrace('Processing PDF with fileid '.$fileid);
           $i = 0;
@@ -58,21 +61,30 @@ class generate_content extends \core\task\adhoc_task {
             mtrace('Success: '.$result['success']);
             //mtrace('Content: '.$result['generatedcontent']);
             mtrace('Error: '.$result['error']);
-            // Todo: generate (e.g. video-)content from $result
-            
-            
+            if ($result['success']) {
+              $coursecontent .= $result['generatedcontent']."\n\n";
+              $results[] = 'Page '.$i.' of PDF with fileid '.$fileid.' processed successfully.';}
+            else {
+              $results[] = 'Error processing page '.$i.' of PDF with fileid '.$fileid.': '.$result['error'];
+            }
           }
         }
+
+        // Todo: generate (e.g. video-)content from $result
         // Send E-Mail to inform user about completed processing
         $courseid = $data->courseid;
         $recipient = \core_user::get_user($this->get_userid());
         $sender    = \core_user::get_support_user();
+        $report = implode("\n", $results);
+        $report .= "\n\nGenerated Course Content:\n".$coursecontent;
 
         $subject = get_string('mail_content_generated_subject', 'aiplacement_contentgenerator');
         $message = get_string('mail_content_generated_message', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
+        $message .= "\n\n".$report;
         $messagehtml = get_string('mail_content_generated_messagehtml', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
+        $messagehtml .= "<br><br><pre>".nl2br(htmlspecialchars($report))."</pre>";
 
         email_to_user($recipient, $sender, $subject, $message, $messagehtml);
         

@@ -102,7 +102,7 @@ else if ($fromform) {
   // keine PDFS übergeben (auch in helper anpassen)
   // Inhalte der mods ebenfalls an Task übergeben
   // Task erst aufrufen, wenn alle Daten vorliegen aus allen mods 
-  print_object($mods);die(); // Debug remove later
+  //print_object($mods);die(); // Debug remove later
 
   $pdfimages = [];
   if (!empty($fromform->pdfimages)) {
