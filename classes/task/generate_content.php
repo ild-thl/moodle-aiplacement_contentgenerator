@@ -46,12 +46,14 @@ class generate_content extends \core\task\adhoc_task {
      * Execute the task.
      */
     public function execute() {
-
+        global $USER;
         $data = $this->get_custom_data();
         $coursecontent = '';
         $results = [];
+        $success = true;
 
         // Process each PDF image
+        // this may take a while...
         foreach ($data->pdfimages as $fileid => $images) {
           mtrace('Processing PDF with fileid '.$fileid);
           $i = 0;
@@ -61,7 +63,6 @@ class generate_content extends \core\task\adhoc_task {
             $result = \aiplacement_contentgenerator\placement::process_pdf($image);
             mtrace('Page '.$i.' processed.');
             mtrace('Success: '.$result['success']);
-            //mtrace('Content: '.$result['generatedcontent']);
             mtrace('Error: '.$result['error']);
             if ($result['success']) {
               $coursecontent .= $result['generatedcontent']."\n\n";
@@ -81,11 +82,46 @@ class generate_content extends \core\task\adhoc_task {
           $results[] = 'Added content from mod.';
         }
 
+        if (empty(trim($coursecontent))) {
+          $results[] = 'No content generated from PDFs or source texts.';
+          $success = false;
+        }
+
+        // Refine $coursecontent with additional instructions
+        if (isset($data->additionalinstructions) && 
+          !empty(trim($data->additionalinstructions)) &&
+          $success) {
+          $context = \context_course::instance($data->courseid);
+          $prompt = "Please refine the following course content according to these instructions: ".$data->additionalinstructions."\n\nCourse Content:\n".$coursecontent;
+          $action = new \core_ai\aiactions\generate_text(
+              contextid: $context->id,
+              userid: $USER->id,
+              prompttext: $prompt,
+          );
+          $manager = \core\di::get(\core_ai\manager::class);
+          $response = $manager->process_action($action);
+          $results[] = 'Refinement success: '.$response->get_success().' Error: '.$response->get_errormessage();
+          if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
+              $coursecontent = $response->get_response_data()['generatedcontent'] ?? '';
+              //$coursecontent .= $response->get_response_data()['generatedcontent'] ?? ''; // for debugging
+          }
+          else {
+            $success = false;
+          }
+        }
+        
         // Todo: generate Marp slides from $coursecontent
         // e.g.: Erstelle mir 3 MARP Folien zu dem Thema ...
         // use action: generate_text
+        if ($success) {
+          
+        }
 
-        // Todo: generate speaker text for each slide
+        // Todo: render Marp slides to Images
+        // use Marp CLI (https://marp.app/cli/) ???
+        // use action: generate_image ???
+
+        // Todo: generate speaker text for each Marp slide
         // use action: generate_text
 
         // Todo: generate audio from speaker text
