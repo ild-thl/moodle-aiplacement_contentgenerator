@@ -51,6 +51,7 @@ class generate_content extends \core\task\adhoc_task {
         $coursecontent = '';
         $results = [];
         $success = true;
+        $context = \context_course::instance($data->courseid);
 
         // Process each PDF image
         // this may take a while...
@@ -65,7 +66,7 @@ class generate_content extends \core\task\adhoc_task {
             mtrace('Success: '.$result['success']);
             mtrace('Error: '.$result['error']);
             if ($result['success']) {
-              $coursecontent .= $result['generatedcontent']."\n\n";
+              $coursecontent .= 'Page '.$i.':\n'.$result['generatedcontent']."\n\n";
               $results[] = 'Page '.$i.' of PDF with fileid '.$fileid.' processed successfully.';}
             else {
               $results[] = 'Error processing page '.$i.' of PDF with fileid '.$fileid.': '.$result['error'];
@@ -74,11 +75,11 @@ class generate_content extends \core\task\adhoc_task {
         }
 
         // Add other mod content here
-        $i = 0;
+        $j = 0;
         foreach ($data->sourcetexts as $text) {
-          $i++;
-          mtrace('Adding content from mod '.$i.'.');
-          $coursecontent .= $text."\n\n";
+          $j++;
+          mtrace('Adding content from mod '.$j.'.');
+          $coursecontent .= 'Page '.$i+$j.':\n'.$text."\n\n";
           $results[] = 'Added content from mod.';
         }
 
@@ -91,7 +92,6 @@ class generate_content extends \core\task\adhoc_task {
         if (isset($data->additionalinstructions) && 
           !empty(trim($data->additionalinstructions)) &&
           $success) {
-          $context = \context_course::instance($data->courseid);
           $prompt = "Please refine the following course content according to these instructions: ".$data->additionalinstructions."\n\nCourse Content:\n".$coursecontent;
           $action = new \core_ai\aiactions\generate_text(
               contextid: $context->id,
@@ -112,10 +112,31 @@ class generate_content extends \core\task\adhoc_task {
           }
         }
         
-        // Todo: generate Marp slides from $coursecontent
-        // e.g.: Erstelle mir 3 MARP Folien zu dem Thema ...
-        // use action: generate_text
+        //  Marp slides from $coursecontent
+        // Todo: Startseite
+        //       klares Design (TH Farben, Logo)
+        //       Footer mit Seitennummer
+        //       alte Seiten aus original content entfernen
+        //       zu große Texte auf mehrere Slides aufteilen 
         if ($success) {
+          $numberofslides = $i + $j;
+          $prompt = "Please create ".$numberofslides." MARP slides for the following course content. Create 1 slide for each part of the content that is marked as 'Page X:'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners.\n\nCourse Content:\n".$coursecontent;
+          $action = new \core_ai\aiactions\generate_text(
+              contextid: $context->id,
+              userid: $USER->id,
+              prompttext: $prompt,
+          );
+          $manager = \core\di::get(\core_ai\manager::class);
+          $response = $manager->process_action($action);
+          $results[] = 'Marp slide generation success: '.$response->get_success().' Error: '.$response->get_errormessage();
+          if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
+              $coursecontent = $response->get_response_data()['generatedcontent'] ?? '';
+              $results[] = 'Marp slides generated successfully.';
+          }
+          else {
+            $success = false;
+            $results[] = 'Error generating Marp slides: '.$response->get_errormessage();
+          }
           
         }
 
