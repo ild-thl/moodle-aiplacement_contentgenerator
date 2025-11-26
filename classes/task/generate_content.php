@@ -117,7 +117,8 @@ class generate_content extends \core\task\adhoc_task {
         //       klares Design (TH Farben, Logo)
         //       Footer mit Seitennummer
         //       alte Seiten aus original content entfernen
-        //       zu große Texte auf mehrere Slides aufteilen 
+        //       zu große Texte auf mehrere Slides aufteilen
+        //       Abschlussfolie mit Quellenangaben
         if ($success) {
           $numberofslides = $i + $j;
           $prompt = "Please create ".$numberofslides." MARP slides for the following course content. Create 1 slide for each part of the content that is marked as 'Page X:'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners.\n\nCourse Content:\n".$coursecontent;
