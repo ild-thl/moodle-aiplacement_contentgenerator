@@ -30,7 +30,8 @@ use stdClass;
 class helper {
     
     public function get_mods_with_content($courseid) {
-        global $DB, $OUTPUT, $PAGE;
+        global $DB, $OUTPUT, $CFG;
+        require_once("$CFG->libdir/filelib.php");
         
         $mods = array();
 
@@ -81,6 +82,7 @@ class helper {
                 $contextid = 0;
                 $filename = '';
                 $filemimetype = '';
+                $mimetype_description = '';
                 if ($files = $this->get_resource_files($resource->id)) {
                     foreach ($files as $file) {
                         if ($file->get_sortorder() == 1) {
@@ -88,6 +90,7 @@ class helper {
                             $contextid = $file->get_contextid();
                             $filename = $file->get_filename();
                             $filemimetype = $file->get_mimetype();
+                            $mimetype_description = get_mimetype_description($file);
                             break;
                         }
                     }
@@ -101,6 +104,7 @@ class helper {
                 $mod->fileid = $fileid;
                 $mod->filename = $filename;
                 $mod->filemimetype = $filemimetype;
+                $mod->mimetype_description = $mimetype_description;
 
                 $mods[] = $mod;
             }

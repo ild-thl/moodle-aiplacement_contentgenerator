@@ -57,8 +57,12 @@ class generate_form extends moodleform {
                 );
                 $attrs['data-url'] = $fileurl->out(false);
             }
+            $title = $mod->title;
+            if (isset($mod->mimetype_description) && !empty($mod->mimetype_description)) {
+                $title .= ' ('.$mod->mimetype_description.')';
+            }
 
-            $checkboxes[] = $mform->createElement('checkbox', $mod->name.'_fileid_'.$mod->fileid, '', $mod->title, $attrs);
+            $checkboxes[] = $mform->createElement('checkbox', $mod->name.'_fileid_'.$mod->fileid, '', $title, $attrs);
         }
         $mform->addGroup($checkboxes, 'modgroup', get_string('modselection', 'aiplacement_contentgenerator'), '<br>', false);
 

@@ -104,9 +104,11 @@ class generate_content extends \core\task\adhoc_task {
           if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
               $coursecontent = $response->get_response_data()['generatedcontent'] ?? '';
               //$coursecontent .= $response->get_response_data()['generatedcontent'] ?? ''; // for debugging
+              $results[] = 'Course content refined successfully.';
           }
           else {
             $success = false;
+            $results[] = 'Error refining course content: '.$response->get_errormessage();
           }
         }
         
