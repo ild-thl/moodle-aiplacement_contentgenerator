@@ -68,9 +68,12 @@ class generate_content extends \core\task\adhoc_task {
             mtrace('Error: '.$result['error']);
             if ($result['success']) {
               $coursecontent .= 'Page '.$i.':\n'.$result['generatedcontent']."\n\n";
-              $results[] = 'Page '.$i.' of PDF with fileid '.$fileid.' processed successfully.';}
+              $results[] = 'Page '.$i.' of PDF with fileid '.$fileid.' processed successfully.';
+              mtrace('Page '.$i.' of PDF with fileid '.$fileid.' processed successfully.');
+            }
             else {
               $results[] = 'Error processing page '.$i.' of PDF with fileid '.$fileid.': '.$result['error'];
+              mtrace('Error processing page '.$i.' of PDF with fileid '.$fileid.': '.$result['error']);
             }
           }
         }
@@ -86,6 +89,7 @@ class generate_content extends \core\task\adhoc_task {
 
         if (empty(trim($coursecontent))) {
           $results[] = 'No content generated from PDFs or source texts.';
+          mtrace('No content generated from PDFs or source texts.');
           $success = false;
         }
 
@@ -119,10 +123,12 @@ class generate_content extends \core\task\adhoc_task {
               $coursecontent = $response->get_response_data()['generatedcontent'] ?? '';
               //$coursecontent .= $response->get_response_data()['generatedcontent'] ?? ''; // for debugging
               $results[] = 'Course content refined successfully.';
+              mtrace('Course content refined successfully.');
           }
           else {
             $success = false;
             $results[] = 'Error refining course content: '.$response->get_errormessage();
+            mtrace('Error refining course content: '.$response->get_errormessage());
           }
         }
 
@@ -198,10 +204,12 @@ class generate_content extends \core\task\adhoc_task {
           if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
               $coursecontent = $response->get_response_data()['generatedcontent'] ?? '';
               $results[] = 'Marp slides generated successfully.';
+              mtrace('Marp slides generated successfully.');
           }
           else {
             $success = false;
             $results[] = 'Error generating Marp slides: '.$response->get_errormessage();
+            mtrace('Error generating Marp slides: '.$response->get_errormessage());
           }
           
         }
@@ -211,6 +219,26 @@ class generate_content extends \core\task\adhoc_task {
         // use Marp CLI (https://marp.app/cli/) ???
         // use local marp installation
         if ($success) {
+          $tempdir = make_temp_directory('aiplacement_slides');
+          $uniqueid = uniqid();
+          $mdfile = $tempdir . '/slides_'.$uniqueid.'.md';
+          file_put_contents($mdfile, $coursecontent);
+
+          $cmd = "marp {$mdfile} --images png --image-scale 2 --output {$tempdir}";
+          $output = [];
+          $returnvar = 0;
+          exec($cmd, $output, $returnvar);
+
+          if ($returnvar !== 0) {
+              $results[] = "Marp failed: " . implode("\n", $output);
+              mtrace("Marp failed: " . implode("\n", $output));
+              $success = false;
+              // Todo: delete temp files
+          }
+          else {
+              $results[] = "Marp slides rendered to images successfully.";
+              mtrace("Marp slides rendered to images successfully.");
+          }
           
 
         }
@@ -228,6 +256,7 @@ class generate_content extends \core\task\adhoc_task {
 
         // Todo: create video from slide images and audio
         // use php library ffmpeg-php???
+        // Todo: delete temp files
 
         // Send E-Mail to inform user about completed processing
         $courseid = $data->courseid;
