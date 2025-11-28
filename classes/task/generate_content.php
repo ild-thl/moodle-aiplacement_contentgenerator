@@ -46,14 +46,15 @@ class generate_content extends \core\task\adhoc_task {
      * Execute the task.
      */
     public function execute() {
-        global $USER;
+        global $USER, $CFG;
         $data = $this->get_custom_data();
         $coursecontent = '';
         $results = [];
         $success = true;
         $context = \context_course::instance($data->courseid);
 
-        // Process each PDF image
+
+        // Process each PDF image (extract content as text)
         // this may take a while...
         foreach ($data->pdfimages as $fileid => $images) {
           mtrace('Processing PDF with fileid '.$fileid);
@@ -88,11 +89,24 @@ class generate_content extends \core\task\adhoc_task {
           $success = false;
         }
 
+
         // Refine $coursecontent with additional instructions
-        if (isset($data->additionalinstructions) && 
-          !empty(trim($data->additionalinstructions)) &&
-          $success) {
-          $prompt = "Please refine the following course content according to these instructions: ".$data->additionalinstructions."\n\nCourse Content:\n".$coursecontent;
+        $prompt = '';
+        // if no additional instructions are given remove placeholder text for images 
+        $logo_url = $CFG->wwwroot.'/ai/placement/contentgenerator/pix/logo.png';
+        $logo_instruction = 'If there are any placeholder texts for images, that should show the TH Luebeck logo, please use the following url to embed the logo image: '.$logo_url;
+        $no_footer_instruction = 'Ensure that there are no footer texts or page numbers included in the content.';
+        if (!isset($data->additionalinstructions) || 
+            empty(trim($data->additionalinstructions))) {
+          $prompt = 'Please improve the structure and clarity of the course content. Ensure that the content is well-organized and easy to understand. ';
+          $prompt .= $logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$coursecontent;
+        }
+        else if (isset($data->additionalinstructions) && 
+          !empty(trim($data->additionalinstructions))) {
+          $prompt = "Please refine the following course content according to these instructions: ";
+          $prompt .= $data->additionalinstructions. " ".$logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$coursecontent;
+        }
+        if ($success) {
           $action = new \core_ai\aiactions\generate_text(
               contextid: $context->id,
               userid: $USER->id,
@@ -111,17 +125,68 @@ class generate_content extends \core\task\adhoc_task {
             $results[] = 'Error refining course content: '.$response->get_errormessage();
           }
         }
+
         
         //  Marp slides from $coursecontent
-        // Todo: Startseite
-        //       klares Design (TH Farben, Logo)
-        //       Footer mit Seitennummer
-        //       alte Seiten aus original content entfernen
-        //       zu große Texte auf mehrere Slides aufteilen
-        //       Abschlussfolie mit Quellenangaben
         if ($success) {
           $numberofslides = $i + $j;
-          $prompt = "Please create ".$numberofslides." MARP slides for the following course content. Create 1 slide for each part of the content that is marked as 'Page X:'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners.\n\nCourse Content:\n".$coursecontent;
+          $marp_example = 
+            '---
+
+            marp: true
+            style: |
+              section.lead {
+                border-bottom: 100px solid #e4003a;
+                padding-bottom: 110px;
+              }
+              section:not(.lead) {
+                border-bottom: 20px solid #e4003a;
+                padding-bottom: 20px;
+              }
+
+            ---
+
+            <!--
+            class: lead
+            -->
+
+            <img src="http://localhost/moodle405kia/ai/placement/contentgenerator/pix/logo.png" alt="TH Lübeck Logo" width="150" style="
+              position: absolute;
+              top: 30px;
+              right: 30px;">
+
+            # Heading of the presentation
+
+            ---
+
+            <!--
+            class: follow
+            -->
+
+            # Heading of the first slide
+
+            ## Subheading of the first slide
+
+            Text content for the first slide.
+
+            - **First bullet point** example text.
+            - **Second bullet point** example text.  
+            - **Third bullet point** example text.
+
+            ---
+
+            # Heading of the second slide';
+
+          $prompt = '';
+
+          $prompt .= "You are an expert in creating educational presentations.\n";
+          $prompt .= "Please create ".$numberofslides." MARP slides for course content, that will be provided later.\n";
+          $prompt .= "Create 1 slide for each part of the content that is marked as 'Page X:'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners. ";
+          $prompt .= "If the content for a slide is too long, split it into multiple slides as needed. It is important that the content fits well on each slide. Please make sure the slides are well-structured and visually appealing. ";
+          $prompt .= "Add 1 slide at the beginning as start slide. Add 1 slide at the end as closing slide with source references if applicable.\n";
+          $prompt .= "\n\nUse the following MARP example as a template for the slide design and structure:\n".$marp_example;
+          $prompt .="\nDo not add unnecessary blank lines or spaces. Do not add any blank slides.";
+          $prompt .="\n\nCourse Content:\n".$coursecontent;
           $action = new \core_ai\aiactions\generate_text(
               contextid: $context->id,
               userid: $USER->id,
@@ -141,19 +206,27 @@ class generate_content extends \core\task\adhoc_task {
           
         }
 
+
         // Todo: render Marp slides to Images
         // use Marp CLI (https://marp.app/cli/) ???
-        // use action: generate_image ???
+        // use local marp installation
+        if ($success) {
+          
+
+        }
+
 
         // Todo: generate speaker text for each Marp slide
         // use action: generate_text
+
 
         // Todo: generate audio from speaker text
         // use new action: generate_audio with text-to-speech (https://wiki.mylab.th-luebeck.dev/de/myLab_services/ai_platform)
         //$newcontent = \aiplacement_contentgenerator\placement::generate_video($coursecontent, $data->additionalinstructions);
         //$results[] = 'Video generation success: '.$newcontent['success'].' Error: '.$newcontent['error'];
 
-        // Todo: create video from slides and audio
+
+        // Todo: create video from slide images and audio
         // use php library ffmpeg-php???
 
         // Send E-Mail to inform user about completed processing
