@@ -34,5 +34,7 @@ $string['modselection'] = 'PDF-Inhalte für Inhaltsgenerierung auswählen';
 $string['mail_content_generated_subject'] = 'Ihre KI-Inhaltsgenerierung ist abgeschlossen';
 $string['mail_content_generated_message'] = 'Die KI-Inhaltsgenerierung für Ihren Kurs wurde abgeschlossen. Sie können die generierten Inhalte anzeigen, indem Sie die Kursseite besuchen: {$a->courselink}';
 $string['mail_content_generated_messagehtml'] = '<p>Die KI-Inhaltsgenerierung für Ihren Kurs wurde abgeschlossen.</p><p>Sie können die generierten Inhalte anzeigen, indem Sie die Kursseite besuchen: <a href="{$a->courselink}">Kursseite</a></p>';
+$string['pathtomarp'] = 'Pfad zu Marp';
+$string['pathtomarp_desc'] = 'Geben Sie den vollständigen Pfad zur Marp-Executable an. Lassen Sie dieses Feld leer, um die Standardinstallation zu verwenden.';
 $string['pluginname'] = 'Generiere KI-Inhalte Platzierung';
 $string['privacy:metadata'] = 'Das Plugin "Generiere KI-Inhalte Platzierung" speichert keine personenbezogenen Daten.';

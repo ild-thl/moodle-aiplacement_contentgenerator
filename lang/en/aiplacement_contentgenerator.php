@@ -34,5 +34,7 @@ $string['mail_content_generated_subject'] = 'Your AI content generation is compl
 $string['mail_content_generated_message'] = 'The AI content generation for your course has been completed. You can view the generated content by visiting the course page: {$a->courselink}';
 $string['mail_content_generated_messagehtml'] = '<p>The AI content generation for your course has been completed.</p><p>You can view the generated content by visiting the course page: <a href="{$a->courselink}">Course Page</a></p>';
 $string['modselection'] = 'Select PDF content for content generation';
+$string['pathtomarp'] = 'Path to Marp';
+$string['pathtomarp_desc'] = 'Specify the full path to the Marp executable. Leave this field empty to use the default installation.';
 $string['pluginname'] = 'Generate content placement';
 $string['privacy:metadata'] = 'The Generate content placement plugin does not store any personal data.';

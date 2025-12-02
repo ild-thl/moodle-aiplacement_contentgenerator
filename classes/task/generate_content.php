@@ -214,6 +214,7 @@ class generate_content extends \core\task\adhoc_task {
           
         }
 
+        // Todo: validate Marp content syntax and refine it again if necessary
 
         // Todo: render Marp slides to Images
         // use Marp CLI (https://marp.app/cli/) ???
@@ -223,26 +224,86 @@ class generate_content extends \core\task\adhoc_task {
           $uniqueid = uniqid();
           $mdfile = $tempdir . '/slides_'.$uniqueid.'.md';
           file_put_contents($mdfile, $coursecontent);
+          $imagesdir = make_temp_directory('aiplacement_slides/images_'.$uniqueid);
+          $imagefilename = $imagesdir . '/image';
+          $scriptpath = $tempdir . '/execute_marp_'.$uniqueid.'.cmd';
+          $pathtomarp = get_config('aiplacement_contentgenerator', 'pathtomarp');
+          $pathtonode = 'C:\laragon\bin\nodejs\node-v22\node.exe';
+          $logfile = $tempdir . '/marp_log_'.$uniqueid.'.txt';
+          file_put_contents($logfile, 'Log file for Marp execution'."\n");
 
-          $cmd = "marp {$mdfile} --images png --image-scale 2 --output {$tempdir}";
+          // Normalize slashes
+          $pathtomarp = str_replace('\\', '/', $pathtomarp);
+          $pathtonode = str_replace('\\', '/', $pathtonode);
+          $mdfile = str_replace('\\', '/', $mdfile);
+          //$tempdir = str_replace('\\', '/', $tempdir);
+          $imagefilename = str_replace('\\', '/', $imagefilename);
+          $scriptpath = str_replace('\\', '/', $scriptpath);
+          $logfile = str_replace('\\', '/', $logfile);
+
+          // // Quote paths to avoid issues with spaces
+          // $pathtomarp = escapeshellarg($pathtomarp);
+          // $pathtonode = escapeshellarg($pathtonode);
+          // $mdfile = escapeshellarg($mdfile);
+          // //$tempdir = escapeshellarg($tempdir);
+          // $imagefilename = escapeshellarg($imagefilename);
+          //$scriptpath = escapeshellarg($scriptpath);
+
+          // prevent risk of command injection
+          //$pathtomarp = escapeshellcmd($pathtomarp);
+
+          if (stripos(PHP_OS, 'WIN') === 0) {
+              // Windows specific command
+              // Windows: start marp through cmd.exe
+              //$cmd = "$pathtomarp $mdfile --images png --image-scale 2 --allow-local-files --output $imagefilename >nul 2>&1";
+              //$cmd = 'cmd /C ' . $pathtomarp ." $mdfile --images png --image-scale 2 --allow-local-files --output $imagefilename >nul 2>&1";
+              //$cmd = 'cmd /C "' . $pathtomarp ." $mdfile --images png --image-scale 2 --allow-local-files --output $imagefilename".' >nul 2>&1"';
+              //$cmd = 'cmd /C ' . $pathtonode ." $pathtomarp $mdfile --images png --image-scale 2 --output $imagefilename";
+              //$cmd = 'cmd /C "' . $pathtonode ." $pathtomarp $mdfile --images png --image-scale 2 --output $imagefilename".'"';
+              //$cmd = 'powershell -NoProfile -NonInteractive -Command "' .$pathtomarp." $mdfile --images png --image-scale 2 --output $imagefilename".'"';
+              //$cmd = 'powershell -NoProfile -NonInteractive -Command ' .$pathtomarp." $mdfile --images png --image-scale 2 --output $imagefilename";
+              //$cmd = escapeshellcmd($cmd);
+              //$cmd = 'cmd /C "'.$CFG->dirroot . '/ai/placement/contentgenerator/marp/execute_marp.cmd" ' . $pathtomarp . ' ' . $mdfile . ' ' . $imagefilename;
+
+              $script = '@echo off
+REM Dieses Skript führt den Marp-Befehl mit umgeleiteter Ausgabe aus
+
+'.$pathtomarp.' '.$mdfile.' --images png --image-scale 2 --allow-local-files --output '.$imagefilename.' < nul > nul 2>&1
+
+REM Prüft den Exit-Code des vorherigen Befehls
+if ERRORLEVEL 1 (
+    echo success: 0
+) else (
+    echo success: 1
+)';
+              file_put_contents($scriptpath, $script);
+              $cmd = $scriptpath;
+          } else {
+              // Unix/Linux specific command
+              $cmd = "$pathtomarp $mdfile --images png --image-scale 2 --output $imagefilename";
+          }
+          
+          mtrace('Executing command: '.$cmd);
           $output = [];
           $returnvar = 0;
           exec($cmd, $output, $returnvar);
+          //exec($pathtomarp." --version", $output, $returnvar);
+          //mtrace($output[0]);
 
           if ($returnvar !== 0) {
-              $results[] = "Marp failed: " . implode("\n", $output);
-              mtrace("Marp failed: " . implode("\n", $output));
+              $results[] = "Marp failed (".$returnvar."): " . implode("\n", $output);
+              mtrace("Marp failed (".$returnvar."): " . implode("\n", $output));
               $success = false;
               // Todo: delete temp files
           }
           else {
-              $results[] = "Marp slides rendered to images successfully.";
-              mtrace("Marp slides rendered to images successfully.");
+              $results[] = "Marp slides rendered to images successfully: " . implode("\n", $output);
+              mtrace("Marp slides rendered to images successfully: " . implode("\n", $output));
+              // Todo: delete temp files
           }
-          
+         
 
         }
-
 
         // Todo: generate speaker text for each Marp slide
         // use action: generate_text
