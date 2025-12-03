@@ -15,6 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 namespace aiplacement_contentgenerator\task;
+use aiplacement_contentgenerator\helper;
 
 /**
  * Class generate_content
@@ -52,92 +53,60 @@ class generate_content extends \core\task\adhoc_task {
         $results = [];
         $success = true;
         $context = \context_course::instance($data->courseid);
-
+        $helper = new helper();
 
         // Process each PDF image (extract content as text)
         // this may take a while...
-        foreach ($data->pdfimages as $fileid => $images) {
-          mtrace('Processing PDF with fileid '.$fileid);
-          $i = 0;
-          foreach ($images as $image) {
-            $i++;
-            // $image is a base64 encoded image string that shows one page of the pdf
-            $result = \aiplacement_contentgenerator\placement::process_pdf($image);
-            mtrace('Page '.$i.' processed.');
-            mtrace('Success: '.$result['success']);
-            mtrace('Error: '.$result['error']);
-            if ($result['success']) {
-              $coursecontent .= 'Page '.$i.':\n'.$result['generatedcontent']."\n\n";
-              $results[] = 'Page '.$i.' of PDF with fileid '.$fileid.' processed successfully.';
-              mtrace('Page '.$i.' of PDF with fileid '.$fileid.' processed successfully.');
-            }
-            else {
-              $results[] = 'Error processing page '.$i.' of PDF with fileid '.$fileid.': '.$result['error'];
-              mtrace('Error processing page '.$i.' of PDF with fileid '.$fileid.': '.$result['error']);
-            }
-          }
-        }
+        mtrace('Start processung PDFs');
+        $processedpages = 0;
+        $result = $helper->process_pdfimages($data->pdfimages);
+        if ($result['success'] === true) {
+          $coursecontent .= $result['extractedcontent'];
+        } 
+        $processedpages = $result['processedpages'];
+        $results[] = $result['result'];
+        mtrace($result['result']);
 
         // Add other mod content here
+        mtrace('Start adding content from other selected course activities.');
         $j = 0;
         foreach ($data->sourcetexts as $text) {
           $j++;
-          mtrace('Adding content from mod '.$j.'.');
-          $coursecontent .= 'Page '.$i+$j.':\n'.$text."\n\n";
-          $results[] = 'Added content from mod.';
+          $coursecontent .= 'Page '.$processedpages+$j.':\n'.$text."\n\n";
         }
+        $results[] = 'Added texts from '.$j.' selected course activities.';
 
+        // Check if any content was generated
         if (empty(trim($coursecontent))) {
           $results[] = 'No content generated from PDFs or source texts.';
           mtrace('No content generated from PDFs or source texts.');
           $success = false;
         }
-
-
+        
         // Refine $coursecontent with additional instructions
-        $prompt = '';
-        // if no additional instructions are given remove placeholder text for images 
-        $logo_url = $CFG->wwwroot.'/ai/placement/contentgenerator/pix/logo.png';
-        $logo_instruction = 'If there are any placeholder texts for images, that should show the TH Luebeck logo, please use the following url to embed the logo image: '.$logo_url;
-        $no_footer_instruction = 'Ensure that there are no footer texts or page numbers included in the content.';
-        if (!isset($data->additionalinstructions) || 
-            empty(trim($data->additionalinstructions))) {
-          $prompt = 'Please improve the structure and clarity of the course content. Ensure that the content is well-organized and easy to understand. ';
-          $prompt .= $logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$coursecontent;
-        }
-        else if (isset($data->additionalinstructions) && 
-          !empty(trim($data->additionalinstructions))) {
-          $prompt = "Please refine the following course content according to these instructions: ";
-          $prompt .= $data->additionalinstructions. " ".$logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$coursecontent;
-        }
         if ($success) {
-          $action = new \core_ai\aiactions\generate_text(
-              contextid: $context->id,
-              userid: $USER->id,
-              prompttext: $prompt,
-          );
-          $manager = \core\di::get(\core_ai\manager::class);
-          $response = $manager->process_action($action);
-          $results[] = 'Refinement success: '.$response->get_success().' Error: '.$response->get_errormessage();
-          if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
-              $coursecontent = $response->get_response_data()['generatedcontent'] ?? '';
-              //$coursecontent .= $response->get_response_data()['generatedcontent'] ?? ''; // for debugging
-              $results[] = 'Course content refined successfully.';
-              mtrace('Course content refined successfully.');
+          mtrace('Start refining extracted course content with AI.');
+          if (isset($data->additionalinstructions) && 
+            !empty(trim($data->additionalinstructions))) {
+            $result = $helper->refine_content($coursecontent, $context, $data->additionalinstructions);
           }
           else {
-            $success = false;
-            $results[] = 'Error refining course content: '.$response->get_errormessage();
-            mtrace('Error refining course content: '.$response->get_errormessage());
+            $result = $helper->refine_content($coursecontent, $context);
           }
+          if ($result['success'] === true) {
+            $coursecontent = $result['extractedcontent'];
+          }
+          $results[] = $result['result'];
+          mtrace($result['result']);
         }
-
         
         //  Marp slides from $coursecontent
         if ($success) {
-          $numberofslides = $i + $j;
+          $numberofslides = $processedpages+$j;
           $marp_example = 
-            '---
+            '<!-- This part has to be at the beginning of the Marp file -->
+
+            ---
 
             marp: true
             style: |
@@ -149,6 +118,8 @@ class generate_content extends \core\task\adhoc_task {
                 border-bottom: 20px solid #e4003a;
                 padding-bottom: 20px;
               }
+
+<!-- here starts the introduction slide  -->
 
             ---
 
@@ -162,6 +133,8 @@ class generate_content extends \core\task\adhoc_task {
               right: 30px;">
 
             # Heading of the presentation
+
+<!-- here starts the first slide  -->
 
             ---
 
@@ -179,7 +152,13 @@ class generate_content extends \core\task\adhoc_task {
             - **Second bullet point** example text.  
             - **Third bullet point** example text.
 
+<!-- here starts the second slide and so on  -->
+
             ---
+
+            <!--
+            class: follow
+            -->
 
             # Heading of the second slide';
 
@@ -229,8 +208,8 @@ class generate_content extends \core\task\adhoc_task {
           $scriptpath = $tempdir . '/execute_marp_'.$uniqueid.'.cmd';
           $pathtomarp = get_config('aiplacement_contentgenerator', 'pathtomarp');
           $pathtonode = 'C:\laragon\bin\nodejs\node-v22\node.exe';
-          $logfile = $tempdir . '/marp_log_'.$uniqueid.'.txt';
-          file_put_contents($logfile, 'Log file for Marp execution'."\n");
+          // $logfile = $tempdir . '/marp_log_'.$uniqueid.'.txt';
+          // file_put_contents($logfile, 'Log file for Marp execution'."\n");
 
           // Normalize slashes
           $pathtomarp = str_replace('\\', '/', $pathtomarp);
@@ -239,7 +218,7 @@ class generate_content extends \core\task\adhoc_task {
           //$tempdir = str_replace('\\', '/', $tempdir);
           $imagefilename = str_replace('\\', '/', $imagefilename);
           $scriptpath = str_replace('\\', '/', $scriptpath);
-          $logfile = str_replace('\\', '/', $logfile);
+          //$logfile = str_replace('\\', '/', $logfile);
 
           // // Quote paths to avoid issues with spaces
           // $pathtomarp = escapeshellarg($pathtomarp);
@@ -301,12 +280,39 @@ if ERRORLEVEL 1 (
               mtrace("Marp slides rendered to images successfully: " . implode("\n", $output));
               // Todo: delete temp files
           }
-         
-
+          //unlink($mdfile);
+          unlink($scriptpath);
         }
 
         // Todo: generate speaker text for each Marp slide
         // use action: generate_text
+        $prompt = '';
+        $prompt .= "You are an expert in creating speaker texts for educational presentations.\n";
+        $prompt .= "Please generate a speaker text for each slide in the presentation content provided later. The speaker text should complement the slide content, providing additional explanations, context, and insights to enhance the audience's understanding. ";
+        $prompt .= "Do not explain the images like logos or decorative images, focus on the educational content of each slide. ";
+        $prompt .= "Ensure that the speaker text is clear, engaging, and aligned with the content of each slide. ";
+        $prompt .= "Format the speaker text by clearly indicating which slide it corresponds to. ";
+        $prompt .= "Mark the beginning of each slide's speaker text with 'Slide number X text:' where X is the slide number.\n\n";
+        $prompt .= "\n\nPresentation Content:\n".$coursecontent;
+
+        $action = new \core_ai\aiactions\generate_text(
+            contextid: $context->id,
+            userid: $USER->id,
+            prompttext: $prompt,
+        );
+        $manager = \core\di::get(\core_ai\manager::class);
+        $response = $manager->process_action($action);
+        $results[] = 'Speaker text generation success: '.$response->get_success().' Error: '.$response->get_errormessage();
+        if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
+            $coursecontent = $response->get_response_data()['generatedcontent'] ?? '';
+            $results[] = 'Speaker text generated successfully.';
+            mtrace('Speaker text generated successfully.');
+        }
+        else {
+          $success = false;
+          $results[] = 'Error generating Speaker text: '.$response->get_errormessage();
+          mtrace('Error generating Speaker text: '.$response->get_errormessage());
+        }
 
 
         // Todo: generate audio from speaker text
@@ -325,7 +331,7 @@ if ERRORLEVEL 1 (
         $sender    = \core_user::get_support_user();
         $report = implode("\n", $results);
         $report .= "\n\nAdditional Instructions:\n".$data->additionalinstructions;
-        $report .= "\n\nGenerated Course Content:\n".$coursecontent;
+        $report .= "\n\nGenerated content:\n".$coursecontent;
 
         $subject = get_string('mail_content_generated_subject', 'aiplacement_contentgenerator');
         $message = get_string('mail_content_generated_message', 'aiplacement_contentgenerator', 

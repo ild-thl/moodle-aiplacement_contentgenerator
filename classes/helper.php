@@ -364,5 +364,77 @@ class helper {
 
     }
 
+    /**
+     * Process PDF images and extract text content
+     * @param array $pdfimages: An array of base64 encoded images representing PDF pages
+     * @return array: An array with success status, extracted content, and result message
+     */
+    public function process_pdfimages($pdfimages) {
+        $errorcount = 0;
+        $successcount = 0;
+        $pdfcontent = '';
+        foreach ($pdfimages as $fileid => $images) {
+            foreach ($images as $image) {
+                // $image is a base64 encoded image string that shows one page of the pdf
+                $result = \aiplacement_contentgenerator\placement::process_pdf($image);
+                if ($result['success']) {
+                    $successcount++;
+                    $pdfcontent .= 'Page '.$successcount.':\n'.$result['generatedcontent']."\n\n";
+                }
+                else {
+                    $errorcount++;
+                }
+            }
+        }
+        $result = [
+            'success' => ($successcount > 0) ? true : false,
+            'extractedcontent' => $pdfcontent,
+            'pagesprocessed' => $successcount,
+            'result' => 'Processed PDF images: '.$successcount.' success, '.$errorcount.' errors.'
+        ];
+        return $result;
+    }
+
+    public function refine_content ($content, $context, $instructions = '') {
+        global $USER, $CFG;
+        $success = true;
+        $refined = '';
+        $result = '';
+        $prompt = '';
+        // if no additional instructions are given remove placeholder text for images 
+        $logo_url = $CFG->wwwroot.'/ai/placement/contentgenerator/pix/logo.png';
+        $logo_instruction = 'If there are any placeholder texts for images, that should show the TH Luebeck logo, please use the following url to embed the logo image: '.$logo_url;
+        $no_footer_instruction = 'Ensure that there are no footer texts or page numbers included in the content.';
+        if ($instructions === '') {
+          $prompt = 'Please improve the structure and clarity of the course content. Ensure that the content is well-organized and easy to understand. ';
+          $prompt .= $logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$content;
+        }
+        else if ($instructions !== '') {
+          $prompt = "Please refine the following course content according to these instructions: ";
+          $prompt .= $instructions. " ".$logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$content;
+        }
+        
+        $action = new \core_ai\aiactions\generate_text(
+            contextid: $context->id,
+            userid: $USER->id,
+            prompttext: $prompt,
+        );
+        $manager = \core\di::get(\core_ai\manager::class);
+        $response = $manager->process_action($action);
+        if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
+            $refined = $response->get_response_data()['generatedcontent'] ?? '';
+        }
+        else {
+            $success = false;
+        }
+        // Todo
+        $result = [
+            'success' => $success,
+            'extractedcontent' => $refined,
+            'result' => 'Refinement success: '.$response->get_success().' Error: '.$response->get_errormessage()
+        ];
+        return $result;
+        
+    }
 
 }
