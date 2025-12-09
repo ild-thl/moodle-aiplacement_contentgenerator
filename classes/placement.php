@@ -72,17 +72,16 @@ class placement extends \core_ai\placement {
     /**
      * Führt eine AI-Action 'generate_video' aus.
      * 
-     * @param string $textcontent text content to generate video from
-     * @return array The generated video content.
+     * @param string $texttotransform text content to generate video from
+     * @return array The generated audio content.
      */
-    public static function generate_video(string $textcontent, string $additionalinstructions): array {
+    public static function text_to_speech(string $texttotransform): array {
         global $USER;
         
         // Prepare the action.
-        $action = new \aiprovider_myai\aiactions\generate_video(
+        $action = new \aiprovider_myai\aiactions\text_to_speech(
             userid: $USER->id,
-            textcontent: $textcontent,
-            prompttext: $additionalinstructions,
+            texttotransform: $texttotransform,
             contextid: \context_system::instance()->id,
         );
 
@@ -99,7 +98,7 @@ class placement extends \core_ai\placement {
             'errorcode' => $response->get_errorcode(),
             'error' => $response->get_errormessage(),
             'timecreated' => $response->get_timecreated(),
-            'prompttext' => $additionalinstructions,
+            'prompttext' => '-',
         ];
     }
 }

@@ -590,6 +590,7 @@ class helper {
             $result['result'] = "Marp slides rendered to images successfully: " . implode("\n", $output);
             $result['success'] = true;
             $result['imagesdir'] = $imagesdir;
+            $result['contentid'] = $uniqueid;
         }
         //Todo: delete temp file, do not delete imagesdir here, it is needed later
         //unlink($mdfile);
@@ -608,7 +609,7 @@ class helper {
         $prompt .= "Do not explain the images like logos or decorative images, focus on the educational content of each slide. ";
         $prompt .= "Ensure that the speaker text is clear, engaging, and aligned with the content of each slide. ";
         $prompt .= "Format the speaker text by clearly indicating which slide it corresponds to. ";
-        $prompt .= "Mark the beginning of each slide's speaker text with 'Slide number X text:' where X is the slide number.\n\n";
+        $prompt .= "Mark the beginning of each slide's speaker text with 'New slide:'.\n\n";
         $prompt .= "\n\nMarp slides:\n".$marp_slides;
 
         $action = new \core_ai\aiactions\generate_text(
@@ -630,6 +631,48 @@ class helper {
             'speaker_text' => $speakertext,
             'result' => 'Speaker text generation success: '.$response->get_success().', Error: '.$response->get_errormessage()
         ];
+        return $result;
+    }
+
+    /**
+     * Generate audio from text using text-to-speech
+     * @param string $texttotransform: The texts to transform into audio
+     * @return array: An array with success status and audio file path
+     */
+    public function generate_audio($texttotransform, $contentid, $context) {
+        $success = true;
+        $result = [];
+        $errorcount = 0;
+
+        // $texttotransform contains multiple texts. Each text starts with "New slide:".
+        // add each text to an array
+        $texts = explode('New slide:', $texttotransform);
+        // remove empty entries
+        $texts = array_filter($texts, function($text) {
+            return trim($text) !== '';
+        });
+        
+        $audiodir = make_temp_directory('aiplacement_slides/audio_'.$contentid);
+        $fileindex = 0;
+        foreach ($texts as $text) {
+            $result = \aiplacement_contentgenerator\placement::text_to_speech($text, $context);
+            if ($result['success']) {
+                $fileindex++;
+                $audio = $result['generatedcontent'];
+                $audiofile = $audiodir.'/audio_'.$fileindex.'.mp3';
+                file_put_contents($audiofile, $audio);
+            }
+            else {
+                $errorcount++;
+                $success = false;
+            }
+        }
+        $result = [
+            'success' => $success,
+            'audiodir' => $audiodir,
+            'result' => 'Audio generation success: '.$fileindex.' audio files created. Errors: '.$errorcount
+        ];
+
         return $result;
     }
 

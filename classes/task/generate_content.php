@@ -16,6 +16,7 @@
 
 namespace aiplacement_contentgenerator\task;
 use aiplacement_contentgenerator\helper;
+use core_availability\result;
 
 /**
  * Class generate_content
@@ -51,6 +52,9 @@ class generate_content extends \core\task\adhoc_task {
         $coursecontent = '';
         $results = [];
         $success = true;
+        $imagesdir = '';
+        $audiodir = '';
+        $contentid = 0;
         $context = \context_course::instance($data->courseid);
         $helper = new helper();
 
@@ -125,7 +129,11 @@ class generate_content extends \core\task\adhoc_task {
         if ($success) {
           mtrace('Start rendering Marp slides to images.');
           $result = $helper->render_images_from_marp_slides($marp_slides);
-          if ($result['success'] === false) {
+          if ($result['success'] === true) {
+              $imagesdir = $result['imagesdir'];
+              $contentid = $result['contentid'];
+          }
+          else {
               $success = false;
           }
           $results[] = $result['result'];
@@ -147,15 +155,24 @@ class generate_content extends \core\task\adhoc_task {
           mtrace($result['result']);
         }
 
-        // Todo: generate audio from speaker text
-        // use new action: generate_audio with text-to-speech (https://wiki.mylab.th-luebeck.dev/de/myLab_services/ai_platform)
-        //$newcontent = \aiplacement_contentgenerator\placement::generate_video($coursecontent, $data->additionalinstructions);
-        //$results[] = 'Video generation success: '.$newcontent['success'].' Error: '.$newcontent['error'];
+        // generate audio from speaker text
+        if ($success) {
+          mtrace('Start generating audio from speaker text with AI.');
+          $result = $helper->generate_audio($speakertext, $contentid, $context);
+          if ($result['success'] === true) {
+            $audiodir = $result['audiodir'];
+          }
+          else {
+            $success = false;
+          }
+          $results[] = $result['result'];
+          mtrace($result['result']);
+        }
 
 
         // Todo: create video from slide images and audio
         // use php library ffmpeg-php???
-        // Todo: delete temp files
+        // Todo: delete temp files (audio, images, marp files)
 
         // Send E-Mail to inform user about completed processing
         $courseid = $data->courseid;
