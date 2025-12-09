@@ -395,11 +395,18 @@ class helper {
         return $result;
     }
 
+    /**
+     * Refine course content using AI
+     * @param string $content: The course content to refine
+     * @param object $context: The context object
+     * @param string $instructions: Additional instructions for refinement
+     * @return array: An array with success status, extracted content, and result message
+     */
     public function refine_content ($content, $context, $instructions = '') {
         global $USER, $CFG;
         $success = true;
         $refined = '';
-        $result = '';
+        $result = [];
         $prompt = '';
         // if no additional instructions are given remove placeholder text for images 
         $logo_url = $CFG->wwwroot.'/ai/placement/contentgenerator/pix/logo.png';
@@ -427,14 +434,203 @@ class helper {
         else {
             $success = false;
         }
-        // Todo
+        
         $result = [
             'success' => $success,
             'extractedcontent' => $refined,
-            'result' => 'Refinement success: '.$response->get_success().' Error: '.$response->get_errormessage()
+            'result' => 'Refinement success: '.$response->get_success().', Error: '.$response->get_errormessage()
         ];
         return $result;
         
+    }
+
+    public function build_marp_slides ($coursecontent, $context, $numberofslides) {
+        global $USER;
+        $success = true;
+        $slides = '';
+        $result = [];
+        $marp_example = 
+        '<!-- This part has to be at the beginning of the Marp file -->
+
+        ---
+
+        marp: true
+        style: |
+            section.lead {
+            border-bottom: 100px solid #e4003a;
+            padding-bottom: 110px;
+            }
+            section:not(.lead) {
+            border-bottom: 20px solid #e4003a;
+            padding-bottom: 20px;
+            }
+
+<!-- here starts the introduction slide  -->
+
+        ---
+
+        <!--
+        class: lead
+        -->
+
+        <img src="http://localhost/moodle405kia/ai/placement/contentgenerator/pix/logo.png" alt="TH Lübeck Logo" width="150" style="
+            position: absolute;
+            top: 30px;
+            right: 30px;">
+
+        # Heading of the presentation
+
+<!-- here starts the first slide  -->
+
+        ---
+
+        <!--
+        class: follow
+        -->
+
+        # Heading of the first slide
+
+        ## Subheading of the first slide
+
+        Text content for the first slide.
+
+        - **First bullet point** example text.
+        - **Second bullet point** example text.  
+        - **Third bullet point** example text.
+
+<!-- here starts the second slide and so on  -->
+
+        ---
+
+        <!--
+        class: follow
+        -->
+
+        # Heading of the second slide';
+
+        $prompt = '';
+
+        $prompt .= "You are an expert in creating educational presentations.\n";
+        $prompt .= "Please create ".$numberofslides." MARP slides for course content, that will be provided later.\n";
+        $prompt .= "Create 1 slide for each part of the content that is marked as 'Page X:'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners. ";
+        $prompt .= "If the content for a slide is too long, split it into multiple slides as needed. It is important that the content fits well on each slide. Please make sure the slides are well-structured and visually appealing. ";
+        $prompt .= "Add 1 slide at the beginning as start slide. Add 1 slide at the end as closing slide with source references if applicable.\n";
+        $prompt .= "\n\nUse the following MARP example as a template for the slide design and structure:\n".$marp_example;
+        $prompt .="\nDo not add unnecessary blank lines or spaces. Do not add any blank slides.";
+        $prompt .="\n\nCourse Content:\n".$coursecontent;
+        $action = new \core_ai\aiactions\generate_text(
+            contextid: $context->id,
+            userid: $USER->id,
+            prompttext: $prompt,
+        );
+        $manager = \core\di::get(\core_ai\manager::class);
+        $response = $manager->process_action($action);
+        if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
+            $slides = $response->get_response_data()['generatedcontent'] ?? '';
+        }
+        else {
+            $success = false;
+        }
+        $result = [
+        'success' => $success,
+        'marp_slides' => $slides,
+        'result' => 'Marp slide generation success: '.$response->get_success().', Error: '.$response->get_errormessage()
+        ];
+        return $result;
+    }
+
+    public function render_images_from_marp_slides($marp_slides) {
+        $result = [];
+        $tempdir = make_temp_directory('aiplacement_slides');
+        $uniqueid = uniqid();
+        $mdfile = $tempdir . '/slides_'.$uniqueid.'.md';
+        file_put_contents($mdfile, $marp_slides);
+        $imagesdir = make_temp_directory('aiplacement_slides/images_'.$uniqueid);
+        $imagefilename = $imagesdir . '/image';
+        $pathtomarp = get_config('aiplacement_contentgenerator', 'pathtomarp');
+
+        // Normalize slashes
+        $pathtomarp = str_replace('\\', '/', $pathtomarp);
+        $mdfile = str_replace('\\', '/', $mdfile);
+        $imagefilename = str_replace('\\', '/', $imagefilename);
+
+        $pathtomarp = escapeshellcmd($pathtomarp);
+
+        if (stripos(PHP_OS, 'WIN') === 0) {
+            // Windows specific command
+            $cmd = "$pathtomarp $mdfile --images png --image-scale 2 --allow-local-files --output $imagefilename < nul > nul 2>&1";
+        } else {
+            // Unix/Linux specific command
+            $cmd = "$pathtomarp $mdfile --images png --image-scale 2 --output $imagefilename";
+        }
+        
+        //mtrace('Executing command: '.$cmd);
+        $output = [];
+        $returnvar = 0;
+        exec($cmd, $output, $returnvar);
+
+        if ($returnvar !== 0) {
+            $result['result'] = "Marp failed (".$returnvar."): " . implode("\n", $output);
+            $result['success'] = false;
+            $result['imagesdir'] = null;
+        }
+        else {
+            // rename images to have correct extension
+            $files = scandir($imagesdir);
+            $fileindex = 0;
+            foreach ($files as $file) {
+                if (is_file($imagesdir.'/'.$file)) {
+                    if (pathinfo($file, PATHINFO_EXTENSION) === 'png') {
+                        continue;
+                    }
+                    $fileindex++;
+                    rename($imagesdir.'/'.$file, $imagesdir.'/slide_'.$fileindex.'.png');
+                }
+            }
+            $result['result'] = "Marp slides rendered to images successfully: " . implode("\n", $output);
+            $result['success'] = true;
+            $result['imagesdir'] = $imagesdir;
+        }
+        //Todo: delete temp file, do not delete imagesdir here, it is needed later
+        //unlink($mdfile);
+        return $result;
+    }
+
+    public function generate_speaker_text($marp_slides, $context) {
+        global $USER;
+        $result = [];
+        $speakertext = '';
+        $success = true;
+
+        $prompt = '';
+        $prompt .= "You are an expert in creating speaker texts for educational presentations.\n";
+        $prompt .= "Please generate a speaker text for each slide in the presentation, provided later as marp slides. The speaker text should complement the slide content, providing additional explanations, context, and insights to enhance the audience's understanding. ";
+        $prompt .= "Do not explain the images like logos or decorative images, focus on the educational content of each slide. ";
+        $prompt .= "Ensure that the speaker text is clear, engaging, and aligned with the content of each slide. ";
+        $prompt .= "Format the speaker text by clearly indicating which slide it corresponds to. ";
+        $prompt .= "Mark the beginning of each slide's speaker text with 'Slide number X text:' where X is the slide number.\n\n";
+        $prompt .= "\n\nMarp slides:\n".$marp_slides;
+
+        $action = new \core_ai\aiactions\generate_text(
+            contextid: $context->id,
+            userid: $USER->id,
+            prompttext: $prompt,
+        );
+        $manager = \core\di::get(\core_ai\manager::class);
+        $response = $manager->process_action($action);
+        $result['result'] = 'Speaker text generation success: '.$response->get_success().' Error: '.$response->get_errormessage();
+        if ($response->get_success() && isset($response->get_response_data()['generatedcontent'])) {
+            $speakertext = $response->get_response_data()['generatedcontent'] ?? '';
+        }
+        else {
+          $success = false;
+        }
+        $result = [
+            'success' => $success,
+            'speaker_text' => $speakertext,
+            'result' => 'Speaker text generation success: '.$response->get_success().', Error: '.$response->get_errormessage()
+        ];
+        return $result;
     }
 
 }
