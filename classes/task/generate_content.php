@@ -48,6 +48,18 @@ class generate_content extends \core\task\adhoc_task {
      * Execute the task.
      */
     public function execute() {
+/*
+      $cmd = '"C:/laragon/bin/ffmpeg/ffmpeg.exe" -y -framerate 1 -i "C:/laragon/moodle405kiadata/temp/aiplacement_slides/images_6938864b5c007/slide_%d.png" -i "C:/laragon/moodle405kiadata/temp/aiplacement_slides/audio_6938864b5c007/audio_%d.mp3" -c:v libx264 -r 30 -pix_fmt yuv420p -c:a aac -shortest "C:/laragon/moodle405kiadata/temp/aiplacement_slides/video_6938864b5c007/video_6938864b5c007.mp4"';
+      $output = [];
+        $returnvar = 0;
+        exec($cmd, $output, $returnvar);
+        mtrace('FFMPEG output:');
+        foreach ($output as $line) {
+            mtrace($line);
+        }
+        mtrace('FFMPEG return var: '.$returnvar);
+        return;
+//*/
         $data = $this->get_custom_data();
         $coursecontent = '';
         $results = [];
@@ -171,7 +183,19 @@ class generate_content extends \core\task\adhoc_task {
 
 
         // Todo: create video from slide images and audio
-        // use php library ffmpeg-php???
+        if ($success) {
+          mtrace('Start generating video from slide images and audio.');
+          $result = $helper->generate_video_from_images_and_audio($imagesdir, $audiodir, $contentid);
+          if ($result['success'] === true) {
+            $videofilepath = $result['videofilepath'];
+          }
+          else {
+            $success = false;
+          }
+          $results[] = $result['result'];
+          mtrace($result['result']);
+        }
+
         // Todo: delete temp files (audio, images, marp files)
 
         // Send E-Mail to inform user about completed processing

@@ -676,4 +676,75 @@ class helper {
         return $result;
     }
 
+    public function generate_video_from_images_and_audio($imagesdir, $audiodir, $contentid) {
+        $result = [];
+        $videofilepath = '';
+        $audiodir = str_replace('\\', '/', $audiodir);
+        $imagesdir = str_replace('\\', '/', $imagesdir);
+
+        $videodir = make_temp_directory('aiplacement_slides/video_'.$contentid);
+        $videofilepath = $videodir.'/video_'.$contentid.'.mp4';
+        $videofilepath = str_replace('\\', '/', $videofilepath);
+
+        // check if images and audio files exist and each image has a corresponding audio file
+        $imagecount = 1;
+        if (!is_file($imagesdir.'/slide_'.$imagecount.'.png')) {
+            $result['result'] = 'No slide images found in '.$imagesdir;
+            $result['success'] = false;
+            $result['videofilepath'] = $videofilepath;
+            return $result;
+        }
+        while (is_file($imagesdir.'/slide_'.$imagecount.'.png')) {
+            mtrace('Found image file: '.$imagesdir.'/slide_'.$imagecount.'.png');
+            if (!is_file($audiodir.'/audio_'.$imagecount.'.mp3')) {
+                $result['result'] = 'Missing audio file for slide '.$imagecount;
+                $result['success'] = false;
+                $result['videofilepath'] = $videofilepath;
+                return $result;
+            }
+            mtrace('Found audio file: '.$audiodir.'/audio_'.$imagecount.'.mp3');
+            $imagecount++;
+        }
+
+        // check if ffmpeg is installed
+        $ffmpeg_path = 'C:/laragon/bin/ffmpeg/ffmpeg.exe'; // Todo: make configurable
+        $ffmpegcheck = shell_exec($ffmpeg_path.' -version');
+        if (stripos($ffmpegcheck, 'ffmpeg version') === false) {
+            $result['result'] = 'ffmpeg is not installed or not found in PATH.';
+            $result['success'] = false;
+            $result['videofilepath'] = $videofilepath;
+            return $result;
+        }
+            
+        // Build ffmpeg command to create video from images and audio
+        //$cmd = "$ffmpeg_path -y -framerate 1 -i $imagesdir/slide_%d.png -i $audiodir/audio_%d.mp3 -c:v libx264 -r 30 -pix_fmt yuv420p -c:a aac -shortest $videofilepath";
+        $ffmpeg_path = escapeshellarg($ffmpeg_path);
+        $slides = '"'.$imagesdir.'/slide_%d.png"';
+        $audio = '"'.$audiodir.'/audio_%d.mp3"';
+        $output = escapeshellarg($videofilepath);
+
+        $cmd = "$ffmpeg_path -y -framerate 1 -i ".$slides.
+               " -i ".$audio.
+               " -c:v libx264 -r 30 -pix_fmt yuv420p -c:a aac -shortest ".$output;
+        
+        mtrace('Executing command: '.$cmd);
+        // Execute the command
+        $output = [];
+        $returnvar = 0;
+        exec($cmd, $output, $returnvar);
+
+        if ($returnvar !== 0) {
+            $result['result'] = "Video generation failed (".$returnvar."): " . implode("\n", $output);
+            $result['success'] = false;
+            $result['videofilepath'] = $videofilepath;
+        }
+        else {
+            $result['result'] = "Video generated successfully: " . implode("\n", $output);
+            $result['success'] = true;
+            $result['videofilepath'] = $videofilepath;
+        }
+
+        return $result;
+    }
+
 }
