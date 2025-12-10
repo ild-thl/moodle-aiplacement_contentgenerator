@@ -227,10 +227,10 @@ class generate_content extends \core\task\adhoc_task {
         $subject = get_string('mail_content_generated_subject', 'aiplacement_contentgenerator');
         $message = get_string('mail_content_generated_message', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
-        $message .= "\n\n".$report;
+        // $message .= "\n\n".$report; // for debugging purposes only
         $messagehtml = get_string('mail_content_generated_messagehtml', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
-        $messagehtml .= "<br><br><pre>".nl2br(htmlspecialchars($report))."</pre>";
+        // $messagehtml .= "<br><br><pre>".nl2br(htmlspecialchars($report))."</pre>"; // for debugging purposes only
 
         email_to_user($recipient, $sender, $subject, $message, $messagehtml);
         

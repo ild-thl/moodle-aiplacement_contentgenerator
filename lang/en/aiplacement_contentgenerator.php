@@ -30,8 +30,8 @@ $string['error_nocontentselected'] = 'Please select at least one content module 
 $string['extract_pdf'] = 'Extract PDF content';
 $string['extract_pdf_setting'] = 'Enable PDF content extraction';
 $string['extract_pdf_setting_desc'] = 'If enabled, users can extract text content from PDF files using AI.';
-$string['mail_content_generated_subject'] = 'Your AI content generation is complete';
-$string['mail_content_generated_message'] = 'The AI content generation for your course has been completed. You can view the generated content by visiting the course page: {$a->courselink}';
+$string['mail_content_generated_subject'] = 'Your AI video creation is complete';
+$string['mail_content_generated_message'] = 'The AI video creation for your course has been completed. You can find the video in your "My files"-area in your course: {$a->courselink}';
 $string['mail_content_generated_messagehtml'] = '<p>The AI content generation for your course has been completed.</p><p>You can view the generated content by visiting the course page: <a href="{$a->courselink}">Course Page</a></p>';
 $string['modselection'] = 'Select PDF content for content generation';
 $string['pathtomarp'] = 'Path to Marp';
