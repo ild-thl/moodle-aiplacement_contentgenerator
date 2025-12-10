@@ -715,34 +715,64 @@ class helper {
             $result['videofilepath'] = $videofilepath;
             return $result;
         }
-            
-        // Build ffmpeg command to create video from images and audio
-        //$cmd = "$ffmpeg_path -y -framerate 1 -i $imagesdir/slide_%d.png -i $audiodir/audio_%d.mp3 -c:v libx264 -r 30 -pix_fmt yuv420p -c:a aac -shortest $videofilepath";
+
         $ffmpeg_path = escapeshellarg($ffmpeg_path);
-        $slides = '"'.$imagesdir.'/slide_%d.png"';
-        $audio = '"'.$audiodir.'/audio_%d.mp3"';
-        $output = escapeshellarg($videofilepath);
+        for ($i = 1; $i < $imagecount; $i++) {
+            mtrace('Build video from slide '.$i.' with image and audio.');
+            $slide = '"'.$imagesdir.'/slide_'.$i.'.png"';
+            $audio = '"'.$audiodir.'/audio_'.$i.'.mp3"';
+            $video = '"'.$videodir.'/video_'.$i.'.mp4"';
+            $video = str_replace('\\', '/', $video);
+            $cmd = "$ffmpeg_path -y -loop 1 -i ".$slide.
+                   " -i ".$audio.
+                   " -c:v libx264 -tune stillimage -c:a aac -pix_fmt yuv420p -shortest ".$video."  < nul > nul 2>&1";
+            mtrace('Executing command: '.$cmd);
+            $output = [];
+            $returnvar = 0;
+            exec($cmd, $output, $returnvar);
+            if ($returnvar !== 0) {
+                $result['result'] = "Video generation failed (".$returnvar."): " . implode("\n", $output);
+                $result['success'] = false;
+                $result['videofilepath'] = $videofilepath;
+                return $result;
+            }
+            else {
+                mtrace('Video for slide '.$i.' generated successfully.');
+            }
+        }
 
-        $cmd = "$ffmpeg_path -y -framerate 1 -i ".$slides.
-               " -i ".$audio.
-               " -c:v libx264 -r 30 -pix_fmt yuv420p -c:a aac -shortest ".$output;
-        
-        mtrace('Executing command: '.$cmd);
-        // Execute the command
-        $output = [];
-        $returnvar = 0;
-        exec($cmd, $output, $returnvar);
-
-        if ($returnvar !== 0) {
-            $result['result'] = "Video generation failed (".$returnvar."): " . implode("\n", $output);
-            $result['success'] = false;
-            $result['videofilepath'] = $videofilepath;
+        // if videodir contains multiple video files, merge them into one
+        if ($imagecount > 2) {
+            mtrace('Merging individual slide videos into final video.');
+            $filelist = $videodir.'/filelist.txt';
+            $filelistcontent = '';
+            for ($i = 1; $i < $imagecount; $i++) {
+                $filelistcontent .= "file 'video_".$i.".mp4'\n";
+            }
+            file_put_contents($filelist, $filelistcontent);
+            $cmd = "$ffmpeg_path -y -f concat -safe 0 -i ".$filelist." -c copy ".$videofilepath." < nul > nul 2>&1";
+            mtrace('Executing command: '.$cmd);
+            $output = [];
+            $returnvar = 0;
+            exec($cmd, $output, $returnvar);
+            if ($returnvar !== 0) {
+                $result['result'] = "Video merging failed (".$returnvar."): " . implode("\n", $output);
+                $result['success'] = false;
+                $result['videofilepath'] = $videofilepath;
+                return $result;
+            }
+            else {
+                mtrace('Final video generated successfully at '.$videofilepath);
+            }
         }
         else {
-            $result['result'] = "Video generated successfully: " . implode("\n", $output);
-            $result['success'] = true;
-            $result['videofilepath'] = $videofilepath;
+            // rename single video file to final videofilepath
+            rename($videodir.'/video_1.mp4', $videofilepath);
         }
+        
+        $result['result'] = "Video generated successfully";
+        $result['success'] = true;
+        $result['videofilepath'] = $videofilepath;
 
         return $result;
     }
