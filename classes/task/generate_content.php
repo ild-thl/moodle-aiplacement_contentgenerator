@@ -196,10 +196,25 @@ class generate_content extends \core\task\adhoc_task {
           mtrace($result['result']);
         }
 
-        // Todo: save generated video in course files area
-        
+        // save generated video in course files area
+        if ($success) {
+          mtrace('Start saving generated video to course files area.');
+          $result = $helper->save_video_to_course_files(
+            $videofilepath,
+            $data->courseid
+          );
+          if ($result['success'] === false) {
+            $success = false;
+          }
+          $results[] = $result['result'];
+          mtrace($result['result']);
+        }
 
-        // Todo: delete temp files (audio, images, marp files)
+        // delete temp files and folders (audio, images, video, marp)
+        mtrace('Start cleaning up temporary files.');
+        $result = $helper->cleanup_temporary_files($contentid);
+        $results[] = $result['result'];
+        mtrace($result['result']);
 
         // Send E-Mail to inform user about completed processing
         $courseid = $data->courseid;

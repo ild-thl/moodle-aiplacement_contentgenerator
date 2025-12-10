@@ -777,4 +777,85 @@ class helper {
         return $result;
     }
 
+    public function save_video_to_course_files($videofilepath, $courseid) {
+        global $USER;
+        $result = [];
+        $filename = basename($videofilepath);
+        // add date and time to the end of the filename
+        $datetime = date('Ymd_His');
+        $filename = pathinfo($filename, PATHINFO_FILENAME).'_'.$datetime.'.'.pathinfo($filename, PATHINFO_EXTENSION);
+        $fs = get_file_storage();
+        //$context = \context_course::instance($courseid);
+        $usercontext = \context_user::instance($USER->id);
+        $filerecord = new \stdClass();
+        $filerecord->contextid = $usercontext->id;
+        $filerecord->component = 'user';
+        $filerecord->filearea = 'private';
+        $filerecord->itemid = 0;
+        $filerecord->filepath = '/';
+        $filerecord->filename = 'ai_generated_'.$filename;
+        $filerecord->userid = $USER->id;
+
+        // check if videofilepath exists
+        if (!is_file($videofilepath)) {
+            $result['success'] = false;
+            $result['result'] = 'Video file not found: '.$videofilepath;
+            return $result;
+        }
+
+        // create file in course files
+        if ($file = $fs->create_file_from_pathname($filerecord, $videofilepath)) {
+            $result['success'] = true;
+            $fileurl = \moodle_url::make_pluginfile_url(
+                $file->get_contextid(),
+                $file->get_component(),
+                $file->get_filearea(),
+                $file->get_itemid(),
+                $file->get_filepath(),
+                $file->get_filename()
+            );
+            $result['fileurl'] = $fileurl->out(false);
+            $result['result'] = 'Video file saved to course files successfully. URL: '.$result['fileurl'];
+        }
+        else {
+            $result['success'] = false;
+            $result['result'] = 'Failed to save video file to course files.';
+        }
+        return $result;
+    }
+
+    /**
+     * Cleanup temporary files and directories
+     * @param string $contentid: The content ID to cleanup temporary files for
+     * @return array: An array with success status and result message
+     */
+    public function cleanup_temporary_files($contentid) {
+        $result = [];
+        $success = true;
+        $tempdirs = [
+            make_temp_directory('aiplacement_slides/images_'.$contentid),
+            make_temp_directory('aiplacement_slides/audio_'.$contentid),
+            make_temp_directory('aiplacement_slides/video_'.$contentid),
+        ];
+        foreach ($tempdirs as $dir) {
+            if (is_dir($dir)) {
+                $files = scandir($dir);
+                foreach ($files as $file) {
+                    if (is_file($dir.'/'.$file)) {
+                        unlink($dir.'/'.$file);
+                    }
+                }
+                rmdir($dir);
+            }
+        }
+        $tempdir = make_temp_directory('aiplacement_slides');
+        $mdfile = $tempdir . '/slides_'.$contentid.'.md';
+        if (is_file($mdfile)) {
+            unlink($mdfile);
+        }
+        $result['success'] = $success;
+        $result['result'] = 'Temporary files and directories cleaned up.';
+        return $result;
+    }
+
 }
