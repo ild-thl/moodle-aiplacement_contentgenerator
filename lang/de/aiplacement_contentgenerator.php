@@ -33,8 +33,13 @@ $string['extract_pdf_setting_desc'] = 'Wenn aktiviert, können Benutzer Textinha
 $string['modselection'] = 'PDF-Inhalte für Inhaltsgenerierung auswählen';
 $string['mail_content_generated_subject'] = 'Videoeerstellung mit KI abgeschlossen';
 $string['mail_content_generated_message'] = 'Die Videoerstellung mit KI für Ihren Kurs wurde abgeschlossen. Sie finden das Video in Ihrem Bereich "Meine Dateien" in Ihrem Kurs: {$a->courselink}';
-$string['mail_content_generated_messagehtml'] = '<p>Die KI-Inhaltsgenerierung für Ihren Kurs wurde abgeschlossen.</p><p>Sie können die generierten Inhalte anzeigen, indem Sie die Kursseite besuchen: <a href="{$a->courselink}">Kursseite</a></p>';
+$string['mail_content_generated_messagehtml'] = '<p>Die KI-Inhaltsgenerierung für Ihren Kurs wurde abgeschlossen.</p><p>Sie finden das Video in Ihrem Bereich "Meine Dateien" in Ihrem Kurs: <a href="{$a->courselink}">Kursseite</a></p>';
 $string['pathtomarp'] = 'Pfad zu Marp';
 $string['pathtomarp_desc'] = 'Geben Sie den vollständigen Pfad zur Marp-Executable an. Lassen Sie dieses Feld leer, um die Standardinstallation zu verwenden.';
 $string['pluginname'] = 'Generiere KI-Inhalte Platzierung';
 $string['privacy:metadata'] = 'Das Plugin "Generiere KI-Inhalte Platzierung" speichert keine personenbezogenen Daten.';
+$string['pathtoffmpeg'] = 'Pfad zu ffmpeg';
+$string['pathtoffmpeg_desc'] = 'Geben Sie den vollständigen Pfad zur ffmpeg-Executable an. Lassen Sie dieses Feld leer, um die Standardinstallation zu verwenden.';
+$string['mail_content_generation_failed_subject'] = 'KI-Inhaltsgenerierung fehlgeschlagen';
+$string['mail_content_generation_failed_message'] = 'Die KI-Inhaltsgenerierung für Ihren Kurs ist fehlgeschlagen. Die folgenden Fehler sind aufgetreten: {$a}';
+$string['mail_content_generation_failed_messagehtml'] = '<p>Die KI-Inhaltsgenerierung für Ihren Kurs ist fehlgeschlagen. Die folgenden Fehler sind aufgetreten: {$a}</p>';

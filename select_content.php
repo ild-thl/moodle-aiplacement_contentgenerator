@@ -119,7 +119,7 @@ else {
   if ($courseid === 1 && (!$fromform && !file_get_contents('php://input'))) {
     redirect(new moodle_url('/course/view.php', ['id' => $course->id]));
   }
-  if (!has_capability('qbank/kia_generator:generatequestions', context_course::instance($course->id))) {
+  if (!has_capability('aiplacement/contentgenerator:extract_pdf', context_course::instance($course->id))) {
     throw new \moodle_exception("capability_error", "aiplacement_contentgenerator", "", get_string('error_capability', 'aiplacement_contentgenerator'));
   }
 

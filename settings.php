@@ -33,4 +33,11 @@ if ($hassiteconfig) {
          new lang_string('pathtomarp_desc', 'aiplacement_contentgenerator'),
         '',
     ));
+
+    $settings->add(new admin_setting_configfile(
+        'aiplacement_contentgenerator/pathtoffmpeg',
+        new lang_string('pathtoffmpeg', 'aiplacement_contentgenerator'),
+        new lang_string('pathtoffmpeg_desc', 'aiplacement_contentgenerator'),
+        '/usr/bin/ffmpeg',
+    ));
 }

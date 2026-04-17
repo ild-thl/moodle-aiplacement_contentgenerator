@@ -546,6 +546,7 @@ class helper {
         $mdfile = $tempdir . '/slides_'.$uniqueid.'.md';
         file_put_contents($mdfile, $marp_slides);
         $imagesdir = make_temp_directory('aiplacement_slides/images_'.$uniqueid);
+        $temphomedir = make_temp_directory('aiplacement_slides/tmphome_'.$uniqueid);
         $imagefilename = $imagesdir . '/image';
         $pathtomarp = get_config('aiplacement_contentgenerator', 'pathtomarp');
 
@@ -553,15 +554,28 @@ class helper {
         $pathtomarp = str_replace('\\', '/', $pathtomarp);
         $mdfile = str_replace('\\', '/', $mdfile);
         $imagefilename = str_replace('\\', '/', $imagefilename);
+        $temphomedir = str_replace('\\', '/', $temphomedir);
 
         $pathtomarp = escapeshellcmd($pathtomarp);
+        $mdfilearg = escapeshellarg($mdfile);
+        $imagefilenamearg = escapeshellarg($imagefilename);
+        $temphomedirarg = escapeshellarg($temphomedir);
 
         if (stripos(PHP_OS, 'WIN') === 0) {
             // Windows specific command
             $cmd = "$pathtomarp $mdfile --images png --image-scale 2 --allow-local-files --output $imagefilename < nul > nul 2>&1";
         } else {
             // Unix/Linux specific command
-            $cmd = "$pathtomarp $mdfile --images png --image-scale 2 --output $imagefilename";
+            // In non-interactive contexts Marp may wait for stdin.
+            $cmd = "HOME=$temphomedirarg $pathtomarp $mdfilearg --images png --image-scale 2 ".
+                "--allow-local-files ".
+                "--no-sandbox ".
+                "--disable-gpu ".
+                "--disable-dev-shm-usage ".
+                "--headless ".
+                "--no-stdin ".
+                "--output $imagefilenamearg ".
+                "</dev/null";
         }
         
         //mtrace('Executing command: '.$cmd);
@@ -580,9 +594,6 @@ class helper {
             $fileindex = 0;
             foreach ($files as $file) {
                 if (is_file($imagesdir.'/'.$file)) {
-                    if (pathinfo($file, PATHINFO_EXTENSION) === 'png') {
-                        continue;
-                    }
                     $fileindex++;
                     rename($imagesdir.'/'.$file, $imagesdir.'/slide_'.$fileindex.'.png');
                 }
@@ -707,10 +718,11 @@ class helper {
         }
 
         // check if ffmpeg is installed
-        $ffmpeg_path = 'C:/laragon/bin/ffmpeg/ffmpeg.exe'; // Todo: make configurable
+        $ffmpeg_path = get_config('aiplacement_contentgenerator', 'pathtoffmpeg');
+        $ffmpeg_path = str_replace('\\', '/', $ffmpeg_path);
         $ffmpegcheck = shell_exec($ffmpeg_path.' -version');
         if (stripos($ffmpegcheck, 'ffmpeg version') === false) {
-            $result['result'] = 'ffmpeg is not installed or not found in PATH.';
+            $result['result'] = 'Error: Generating video failed. ffmpeg is not installed or not found in PATH.';
             $result['success'] = false;
             $result['videofilepath'] = $videofilepath;
             return $result;
@@ -723,9 +735,15 @@ class helper {
             $audio = '"'.$audiodir.'/audio_'.$i.'.mp3"';
             $video = '"'.$videodir.'/video_'.$i.'.mp4"';
             $video = str_replace('\\', '/', $video);
-            $cmd = "$ffmpeg_path -y -loop 1 -i ".$slide.
+            if (stripos(PHP_OS, 'WIN') === 0) {
+                $cmd = "$ffmpeg_path -y -loop 1 -i ".$slide.
                    " -i ".$audio.
-                   " -c:v libx264 -tune stillimage -c:a aac -pix_fmt yuv420p -shortest ".$video."  < nul > nul 2>&1";
+                   " -c:v libx264 -tune stillimage -c:a aac -pix_fmt yuv420p -shortest ".$video." < nul > nul 2>&1";
+            } else {
+                $cmd = "$ffmpeg_path -y -loop 1 -i ".$slide.
+                   " -i ".$audio.
+                   " -c:v libx264 -tune stillimage -c:a aac -pix_fmt yuv420p -shortest ".$video." > /dev/null 2>&1";
+            }
             mtrace('Executing command: '.$cmd);
             $output = [];
             $returnvar = 0;
@@ -750,7 +768,13 @@ class helper {
                 $filelistcontent .= "file 'video_".$i.".mp4'\n";
             }
             file_put_contents($filelist, $filelistcontent);
-            $cmd = "$ffmpeg_path -y -f concat -safe 0 -i ".$filelist." -c copy ".$videofilepath." < nul > nul 2>&1";
+            $filelistarg = escapeshellarg($filelist);
+            $videofilepatharg = escapeshellarg($videofilepath);
+            if (stripos(PHP_OS, 'WIN') === 0) {
+                $cmd = "$ffmpeg_path -y -f concat -safe 0 -i $filelistarg -c copy $videofilepatharg < nul 2>&1";
+            } else {
+                $cmd = "$ffmpeg_path -y -f concat -safe 0 -i $filelistarg -c copy $videofilepatharg </dev/null 2>&1";
+            }
             mtrace('Executing command: '.$cmd);
             $output = [];
             $returnvar = 0;
@@ -832,21 +856,43 @@ class helper {
     public function cleanup_temporary_files($contentid) {
         $result = [];
         $success = true;
+
+        $removedirectoryrecursively = function(string $directory) use (&$success): void {
+            if (!is_dir($directory)) {
+                return;
+            }
+
+            $items = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($directory, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+
+            foreach ($items as $item) {
+                $path = $item->getPathname();
+                if ($item->isDir()) {
+                    if (!@rmdir($path)) {
+                        $success = false;
+                    }
+                } else {
+                    if (!@unlink($path)) {
+                        $success = false;
+                    }
+                }
+            }
+
+            if (!@rmdir($directory)) {
+                $success = false;
+            }
+        };
+
         $tempdirs = [
             make_temp_directory('aiplacement_slides/images_'.$contentid),
             make_temp_directory('aiplacement_slides/audio_'.$contentid),
             make_temp_directory('aiplacement_slides/video_'.$contentid),
+            make_temp_directory('aiplacement_slides/tmphome_'.$contentid),
         ];
         foreach ($tempdirs as $dir) {
-            if (is_dir($dir)) {
-                $files = scandir($dir);
-                foreach ($files as $file) {
-                    if (is_file($dir.'/'.$file)) {
-                        unlink($dir.'/'.$file);
-                    }
-                }
-                rmdir($dir);
-            }
+            $removedirectoryrecursively($dir);
         }
         $tempdir = make_temp_directory('aiplacement_slides');
         $mdfile = $tempdir . '/slides_'.$contentid.'.md';

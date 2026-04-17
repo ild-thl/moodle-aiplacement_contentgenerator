@@ -220,10 +220,22 @@ class generate_content extends \core\task\adhoc_task {
         $courseid = $data->courseid;
         $recipient = \core_user::get_user($this->get_userid());
         $sender    = \core_user::get_support_user();
-        $report = implode("\n", $results);
-        $report .= "\n\nAdditional Instructions:\n".$data->additionalinstructions;
-        $report .= "\n\nGenerated content:\n".$speakertext;
+        $reportparts = [];
+        foreach ($results as $entry) {
+            $entry = trim((string)$entry);
+            if ($entry !== '') {
+                $reportparts[] = $entry;
+            }
+        }
+        if (!empty(trim((string)$data->additionalinstructions))) {
+            $reportparts[] = "Additional Instructions:\n".trim((string)$data->additionalinstructions);
+        }
+        if (!empty(trim((string)$speakertext))) {
+            $reportparts[] = "Generated content:\n".trim((string)$speakertext);
+        }
+        //$report = implode("\n\n", $reportparts);
 
+        if ($success) {
         $subject = get_string('mail_content_generated_subject', 'aiplacement_contentgenerator');
         $message = get_string('mail_content_generated_message', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
@@ -231,7 +243,18 @@ class generate_content extends \core\task\adhoc_task {
         $messagehtml = get_string('mail_content_generated_messagehtml', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
         // $messagehtml .= "<br><br><pre>".nl2br(htmlspecialchars($report))."</pre>"; // for debugging purposes only
-
+        }
+        else {
+          $formattedreporttext = '';
+          foreach ($reportparts as $entry) {
+            $formattedreporttext .= "- ".$entry."\n\n";
+          }
+          $formattedreporttext = trim($formattedreporttext);
+          $formattedreporthtml = '<br><br>'.nl2br(s($formattedreporttext));
+          $subject = get_string('mail_content_generation_failed_subject', 'aiplacement_contentgenerator');
+          $message = get_string('mail_content_generation_failed_message', 'aiplacement_contentgenerator', $formattedreporttext);
+          $messagehtml = get_string('mail_content_generation_failed_messagehtml', 'aiplacement_contentgenerator', $formattedreporthtml);
+        }
         email_to_user($recipient, $sender, $subject, $message, $messagehtml);
         
     }
