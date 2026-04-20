@@ -373,8 +373,11 @@ class helper {
         $errorcount = 0;
         $successcount = 0;
         $pdfcontent = '';
+        $errors = [];
         foreach ($pdfimages as $fileid => $images) {
+            $pageindex = 0;
             foreach ($images as $image) {
+                $pageindex++;
                 // $image is a base64 encoded image string that shows one page of the pdf
                 $result = \aiplacement_contentgenerator\placement::process_pdf($image);
                 if ($result['success']) {
@@ -383,14 +386,27 @@ class helper {
                 }
                 else {
                     $errorcount++;
+                    $errorcode = (int)($result['errorcode'] ?? 0);
+                    $errormessage = trim((string)($result['error'] ?? ''));
+                    if ($errormessage === '') {
+                        $errormessage = 'Unknown error during PDF extraction.';
+                    }
+                    $errors[] = 'File '.$fileid.', page '.$pageindex.
+                        ' failed ('.$errorcode.'): '.$errormessage;
                 }
+            }
+        }
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                mtrace($error);
             }
         }
         $result = [
             'success' => ($successcount > 0) ? true : false,
             'extractedcontent' => $pdfcontent,
             'pagesprocessed' => $successcount,
-            'result' => 'Processed PDF images: '.$successcount.' success, '.$errorcount.' errors.'
+            'result' => 'Processed PDF images: '.$successcount.' success, '.$errorcount.' errors.'.
+                (!empty($errors) ? ' First error: '.$errors[0] : '')
         ];
         return $result;
     }
