@@ -55,6 +55,7 @@ Note: In Linux deployments, the web server user (for example `www-data`) must be
    - Marp CLI
    - Google Chrome
    - ffmpeg
+   - poppler-utils (`pdftoppm`)
 5. Verify file and execution permissions:
    - Moodle must be able to write to temporary directories and start required processes.
 
@@ -73,6 +74,7 @@ Configure the plugin in the plugin settings:
 Important:
 - Always use absolute paths.
 - In Linux environments, Marp/Chrome must work in a headless task-runner context.
+- PDF page rendering is fully server-side via `pdftoppm` (no client-side PDF-to-base64 conversion).
 
 ## Usage notes
 
@@ -81,18 +83,20 @@ Important:
 - Intermediate artifacts are created in temporary directories and cleaned up after processing.
 - The final video is stored in the user file area (depending on implementation/workflow state).
 - If errors occur, check task logs (`mtrace`) and configured system paths first.
+- The form submits only selected file IDs; large PDF payloads are not posted from the browser.
 
 ## Technical flow (simplified)
 
 1. Extract/aggregate source content
-2. Refine text using an LLM
-3. Generate Marp markdown
-4. Render slides to images (Marp + Chrome)
-5. Generate speaker text
-6. Create text-to-speech output per slide
-7. Generate video segments per slide (`ffmpeg`)
-8. Merge segment videos (`ffmpeg concat`)
-9. Store the final result in Moodle
+2. Render selected PDF files to page images server-side (`pdftoppm`)
+3. Refine text using an LLM
+4. Generate Marp markdown
+5. Render slides to images (Marp + Chrome)
+6. Generate speaker text
+7. Create text-to-speech output per slide
+8. Generate video segments per slide (`ffmpeg`)
+9. Merge segment videos (`ffmpeg concat`)
+10. Store the final result in Moodle
 
 ## Architecture and connected systems
 
@@ -101,7 +105,7 @@ The plugin contains the orchestration workflow inside Moodle and delegates model
 External system components:
 - Moodle AI subsystem + provider (`aiprovider_myai`)
 - API endpoints of the used AI models (external model hosting)
-- Local rendering/media tools (`marp`, `google-chrome`, `ffmpeg`)
+- Local rendering/media tools (`pdftoppm`, `marp`, `google-chrome`, `ffmpeg`)
 
 This keeps the architecture decoupled:
 - Moodle plugin = process logic, data flow, user integration

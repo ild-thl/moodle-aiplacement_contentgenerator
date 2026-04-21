@@ -86,6 +86,7 @@ class generate_content extends \core\task\adhoc_task {
             $success = false;
           }
         }
+
         $result = $helper->process_pdfimages($pdfimages);
         if ($result['success'] === true) {
           $coursecontent .= $result['extractedcontent'];

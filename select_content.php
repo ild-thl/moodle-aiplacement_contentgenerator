@@ -61,7 +61,6 @@ $PAGE->set_course($course);
 $PAGE->set_url($url);
 $PAGE->set_title($pagetitle);
 $PAGE->set_pagelayout('standard');
-$PAGE->requires->js_call_amd('aiplacement_contentgenerator/pdfprocessor', 'init');
 
 $helper = new helper();
 

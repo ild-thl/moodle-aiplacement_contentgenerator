@@ -42,21 +42,7 @@ class generate_form extends moodleform {
         foreach ($mods as $mod) {
             $attrs = [
                 'data-fileid' => $mod->fileid,
-                'data-mimetype' => $mod->filemimetype, // will be checked in js
             ];
-            // if file is pdf
-            if ($mod->filemimetype == 'application/pdf') {
-                // PDF-Datei-URL ermitteln
-                $fileurl = \moodle_url::make_pluginfile_url(
-                    $mod->contextid,
-                    $mod->name,
-                    'content',
-                    0,
-                    '/',
-                    $mod->filename
-                );
-                $attrs['data-url'] = $fileurl->out(false);
-            }
             $title = $mod->title;
             if (isset($mod->mimetype_description) && !empty($mod->mimetype_description)) {
                 $title .= ' ('.$mod->mimetype_description.')';
@@ -72,9 +58,6 @@ class generate_form extends moodleform {
 
         $mform->addElement('hidden', 'courseid', $courseid);
         $mform->setType('courseid', PARAM_INT);
-
-        $mform->addElement('hidden', 'pdfimages');
-        $mform->setType('pdfimages', PARAM_RAW);
 
         $this->add_action_buttons(true, get_string('generatecontent', 'aiplacement_contentgenerator'));
     }
