@@ -16,7 +16,6 @@
 
 namespace aiplacement_contentgenerator\task;
 use aiplacement_contentgenerator\helper;
-use core_availability\result;
 
 /**
  * Class generate_content
@@ -26,7 +25,15 @@ use core_availability\result;
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class generate_content extends \core\task\adhoc_task {
-    
+    /**
+     * Create a new ad-hoc task instance.
+     *
+     * @param mixed $pdffileids Selected PDF file ids.
+     * @param mixed $sourcetexts Extracted text sources from selected modules.
+     * @param string $additionalinstructions Additional user instructions.
+     * @param int $courseid Course id.
+     * @return self
+     */
     public static function instance(
         mixed $pdffileids,
         mixed $sourcetexts,
@@ -48,18 +55,6 @@ class generate_content extends \core\task\adhoc_task {
      * Execute the task.
      */
     public function execute() {
-/*
-      $cmd = '"C:/laragon/bin/ffmpeg/ffmpeg.exe" -y -framerate 1 -i "C:/laragon/moodle405kiadata/temp/aiplacement_slides/images_6938864b5c007/slide_%d.png" -i "C:/laragon/moodle405kiadata/temp/aiplacement_slides/audio_6938864b5c007/audio_%d.mp3" -c:v libx264 -r 30 -pix_fmt yuv420p -c:a aac -shortest "C:/laragon/moodle405kiadata/temp/aiplacement_slides/video_6938864b5c007/video_6938864b5c007.mp4"';
-      $output = [];
-        $returnvar = 0;
-        exec($cmd, $output, $returnvar);
-        mtrace('FFMPEG output:');
-        foreach ($output as $line) {
-            mtrace($line);
-        }
-        mtrace('FFMPEG return var: '.$returnvar);
-        return;
-//*/
         $data = $this->get_custom_data();
         $coursecontent = '';
         $results = [];
@@ -195,7 +190,7 @@ class generate_content extends \core\task\adhoc_task {
         }
 
 
-        // Todo: create video from slide images and audio
+        // create video from slide images and audio
         if ($success) {
           mtrace('Start generating video from slide images and audio.');
           $result = $helper->generate_video_from_images_and_audio($imagesdir, $audiodir, $contentid);
@@ -246,16 +241,13 @@ class generate_content extends \core\task\adhoc_task {
         if (!empty(trim((string)$speakertext))) {
             $reportparts[] = "Generated content:\n".trim((string)$speakertext);
         }
-        //$report = implode("\n\n", $reportparts);
 
         if ($success) {
         $subject = get_string('mail_content_generated_subject', 'aiplacement_contentgenerator');
         $message = get_string('mail_content_generated_message', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
-        // $message .= "\n\n".$report; // for debugging purposes only
         $messagehtml = get_string('mail_content_generated_messagehtml', 'aiplacement_contentgenerator', 
             array ('courselink' => new \moodle_url('/course/view.php', ['id' => $courseid])));
-        // $messagehtml .= "<br><br><pre>".nl2br(htmlspecialchars($report))."</pre>"; // for debugging purposes only
         }
         else {
           $formattedreporttext = '';

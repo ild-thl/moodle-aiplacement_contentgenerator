@@ -176,16 +176,6 @@ class helper {
                 if ($content = $this->get_text_from_file($fileid)) {
                     $sourcetexts[] = $content;
                 }
-                // if ($files = $this->get_resource_files($resourceid)) {
-                //     foreach ($files as $file) {
-                //         if ($file->get_mimetype() == 'application/pdf') {
-                //             continue;
-                //         }
-                //         if ($sourcetext = $this->get_text_from_file($file->get_id())) {
-                //             $sourcetexts[] = $sourcetext;
-                //         }
-                //     }
-                // }
             }
         }
         return $sourcetexts;
@@ -271,10 +261,6 @@ class helper {
             if ($mimetype === 'application/vnd.openxmlformats-officedocument.wordprocessingml.document') {
                 return $this->get_text_from_word_document($file);
             }
-            // We don't process pdfs here
-            // if ($mimetype === 'application/pdf') {
-            //     return $this->get_text_from_pdf_document($file);
-            // }
             if ($mimetype === 'text/plain') {
                 return $this->get_text_from_text_file($file);
             }
@@ -585,6 +571,14 @@ class helper {
         
     }
 
+    /**
+     * Build Marp markdown slides from course content.
+     *
+     * @param string $coursecontent Aggregated/refined content.
+     * @param \context $context Moodle context.
+     * @param int $numberofslides Target number of slides.
+     * @return array
+     */
     public function build_marp_slides ($coursecontent, $context, $numberofslides) {
         global $USER;
         $success = true;
@@ -680,6 +674,12 @@ class helper {
         return $result;
     }
 
+    /**
+     * Render Marp markdown slides to PNG files.
+     *
+     * @param string $marp_slides Marp markdown.
+     * @return array
+     */
     public function render_images_from_marp_slides($marp_slides) {
         $result = [];
         $tempdir = make_temp_directory('aiplacement_slides');
@@ -719,7 +719,6 @@ class helper {
                 "</dev/null";
         }
         
-        //mtrace('Executing command: '.$cmd);
         $output = [];
         $returnvar = 0;
         exec($cmd, $output, $returnvar);
@@ -744,11 +743,16 @@ class helper {
             $result['imagesdir'] = $imagesdir;
             $result['contentid'] = $uniqueid;
         }
-        //Todo: delete temp file, do not delete imagesdir here, it is needed later
-        //unlink($mdfile);
         return $result;
     }
 
+    /**
+     * Generate speaker text for each Marp slide.
+     *
+     * @param string $marp_slides Marp markdown.
+     * @param \context $context Moodle context.
+     * @return array
+     */
     public function generate_speaker_text($marp_slides, $context) {
         global $USER;
         $result = [];
@@ -828,6 +832,14 @@ class helper {
         return $result;
     }
 
+    /**
+     * Build the final video from slide images and generated audio.
+     *
+     * @param string $imagesdir Directory containing slide images.
+     * @param string $audiodir Directory containing audio files.
+     * @param string $contentid Unique content id.
+     * @return array
+     */
     public function generate_video_from_images_and_audio($imagesdir, $audiodir, $contentid) {
         $result = [];
         $videofilepath = '';
@@ -942,6 +954,13 @@ class helper {
         return $result;
     }
 
+    /**
+     * Save generated video file to the user's private file area.
+     *
+     * @param string $videofilepath Absolute video file path.
+     * @param int $courseid Course id.
+     * @return array
+     */
     public function save_video_to_course_files($videofilepath, $courseid) {
         global $USER;
         $result = [];
@@ -950,7 +969,6 @@ class helper {
         $datetime = date('Ymd_His');
         $filename = pathinfo($filename, PATHINFO_FILENAME).'_'.$datetime.'.'.pathinfo($filename, PATHINFO_EXTENSION);
         $fs = get_file_storage();
-        //$context = \context_course::instance($courseid);
         $usercontext = \context_user::instance($USER->id);
         $filerecord = new \stdClass();
         $filerecord->contextid = $usercontext->id;

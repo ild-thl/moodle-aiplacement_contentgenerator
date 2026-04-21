@@ -29,12 +29,15 @@ use aiplacement_contentgenerator\helper;
 require_once("$CFG->libdir/formslib.php");
 
 class generate_form extends moodleform {
-
+    /**
+     * Form definition.
+     *
+     * @return void
+     */
     public function definition() {
        
         $mform = $this->_form;
 
-        // ToDo add Elements for mods with content
         $courseid = isset($this->_customdata['courseid']) ? $this->_customdata['courseid'] : 0;
         $helper = new helper();
         $mods = $helper->get_mods_with_content($courseid);
@@ -54,7 +57,6 @@ class generate_form extends moodleform {
 
         $mform->addElement('textarea', 'additional_instructions', get_string('additional_instructions', 'aiplacement_contentgenerator'),'wrap="virtual" rows="20" cols="50"');
         $mform->setType('additional_instructions', PARAM_TEXT);
-        //$mform->setDefault('additional_instructions', get_string('additional_instructions_default', 'aiplacement_contentgenerator'));
 
         $mform->addElement('hidden', 'courseid', $courseid);
         $mform->setType('courseid', PARAM_INT);
@@ -62,6 +64,13 @@ class generate_form extends moodleform {
         $this->add_action_buttons(true, get_string('generatecontent', 'aiplacement_contentgenerator'));
     }
 
+    /**
+     * Validation callback.
+     *
+     * @param array $data Form data.
+     * @param array $files Uploaded files.
+     * @return array
+     */
     public function validation($data, $files) {
         $errors = [];
         // Check if at least one checkbox is checked
