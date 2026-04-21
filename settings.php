@@ -47,4 +47,32 @@ if ($hassiteconfig) {
         new lang_string('pathtopdftoppm_desc', 'aiplacement_contentgenerator'),
         '/usr/bin/pdftoppm',
     ));
+
+    $settings->add(new admin_setting_heading(
+        'aiplacement_contentgenerator/refinecontentsettings',
+        new lang_string('refinecontentsettings', 'aiplacement_contentgenerator'),
+        new lang_string('refinecontentsettings_desc', 'aiplacement_contentgenerator')
+    ));
+
+    $settings->add(new admin_setting_configtextarea(
+        'aiplacement_contentgenerator/refinecontentprompttemplate',
+        new lang_string('refinecontentprompttemplate', 'aiplacement_contentgenerator'),
+        new lang_string('refinecontentprompttemplate_desc', 'aiplacement_contentgenerator'),
+        new lang_string('refinecontentprompttemplate_default', 'aiplacement_contentgenerator'),
+        PARAM_RAW,
+        12,
+        10
+    ));
+
+    $settings->add(new admin_setting_configstoredfile(
+        'aiplacement_contentgenerator/refinecontentlogo',
+        new lang_string('refinecontentlogo', 'aiplacement_contentgenerator'),
+        new lang_string('refinecontentlogo_desc', 'aiplacement_contentgenerator'),
+        'refinecontentlogo',
+        0,
+        [
+            'maxfiles' => 1,
+            'accepted_types' => ['.png', '.jpg', '.jpeg', '.webp', '.gif'],
+        ]
+    ));
 }

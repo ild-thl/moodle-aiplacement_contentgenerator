@@ -42,6 +42,22 @@ $string['pathtoffmpeg'] = 'Pfad zu ffmpeg';
 $string['pathtoffmpeg_desc'] = 'Geben Sie den vollständigen Pfad zur ffmpeg-Executable an. Lassen Sie dieses Feld leer, um die Standardinstallation zu verwenden.';
 $string['pathtopdftoppm'] = 'Pfad zu pdftoppm';
 $string['pathtopdftoppm_desc'] = 'Geben Sie den vollständigen Pfad zur pdftoppm-Executable (poppler-utils) an. Lassen Sie dieses Feld leer, um die Standardinstallation zu verwenden.';
+$string['refinecontentsettings'] = 'Überarbeitung ausgewählter Kursinhalte';
+$string['refinecontentsettings_desc'] = 'Diese Einstellungen steuern, wie ausgewählte Kursinhalte vor der Foliengenerierung überarbeitet werden.';
+$string['refinecontentprompttemplate'] = 'Prompt-Template für die Inhaltsüberarbeitung';
+$string['refinecontentprompttemplate_desc'] = 'Verwenden Sie die Platzhalter {{additionalinstructions}}, {{content}} und {{logo_url}}. {{additionalinstructions}} enthält die zusätzlichen Hinweise, die Nutzer beim Start der Inhaltsgenerierung im Formular eingeben. {{content}} enthält die bereits zusammengeführten Inhalte aus den ausgewählten Kursmaterialien. {{logo_url}} enthält die URL des weiter unten konfigurierbaren Logos.';
+$string['refinecontentprompttemplate_default'] = 'Please refine the following course content. Ensure that the content is well-organized, easy to understand, and suitable for educational slides.
+
+Additional user instructions:
+{{additionalinstructions}}
+
+If there are placeholders for the TH Luebeck logo, use this image URL: {{logo_url}}
+Ensure that there are no footer texts or page numbers included in the content.
+
+Course content:
+{{content}}';
+$string['refinecontentlogo'] = 'Logo für Prompts zur Inhaltsüberarbeitung';
+$string['refinecontentlogo_desc'] = 'Optionales Logo-Bild, das im Prompt als {{logo_url}} verwendet wird. Wenn leer, wird die Standard-Logo-URL des Plugins verwendet.';
 $string['mail_content_generation_failed_subject'] = 'KI-Inhaltsgenerierung fehlgeschlagen';
 $string['mail_content_generation_failed_message'] = 'Die KI-Inhaltsgenerierung für Ihren Kurs ist fehlgeschlagen. Die folgenden Fehler sind aufgetreten: {$a}';
 $string['mail_content_generation_failed_messagehtml'] = '<p>Die KI-Inhaltsgenerierung für Ihren Kurs ist fehlgeschlagen. Die folgenden Fehler sind aufgetreten: {$a}</p>';

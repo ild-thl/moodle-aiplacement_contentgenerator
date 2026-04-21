@@ -534,19 +534,23 @@ class helper {
         $success = true;
         $refined = '';
         $result = [];
-        $prompt = '';
-        // if no additional instructions are given remove placeholder text for images 
-        $logo_url = $CFG->wwwroot.'/ai/placement/contentgenerator/pix/logo.png';
-        $logo_instruction = 'If there are any placeholder texts for images, that should show the TH Luebeck logo, please use the following url to embed the logo image: '.$logo_url;
-        $no_footer_instruction = 'Ensure that there are no footer texts or page numbers included in the content.';
-        if ($instructions === '') {
-          $prompt = 'Please improve the structure and clarity of the course content. Ensure that the content is well-organized and easy to understand. ';
-          $prompt .= $logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$content;
+        $defaultlogo = $CFG->wwwroot.'/ai/placement/contentgenerator/pix/logo.png';
+        $logo_url = $this->get_refine_content_logo_url($defaultlogo);
+        $template = get_config('aiplacement_contentgenerator', 'refinecontentprompttemplate');
+        if (empty(trim((string)$template))) {
+            $template = "Please refine the following course content. Ensure that the content is well-organized, ".
+                "easy to understand, and suitable for educational slides.\n\n".
+                "Additional user instructions:\n{{additionalinstructions}}\n\n".
+                "If there are placeholders for the TH Luebeck logo, use this image URL: {{logo_url}}\n".
+                "Ensure that there are no footer texts or page numbers included in the content.\n\n".
+                "Course content:\n{{content}}";
         }
-        else if ($instructions !== '') {
-          $prompt = "Please refine the following course content according to these instructions: ";
-          $prompt .= $instructions. " ".$logo_instruction.' '.$no_footer_instruction."\n\nCourse Content:\n".$content;
-        }
+
+        $prompt = str_replace(
+            ['{{additionalinstructions}}', '{{logo_url}}', '{{content}}'],
+            [trim((string)$instructions), $logo_url, $content],
+            $template
+        );
         
         $action = new \core_ai\aiactions\generate_text(
             contextid: $context->id,
@@ -569,6 +573,44 @@ class helper {
         ];
         return $result;
         
+    }
+
+    /**
+     * Get the logo URL configured for refine-content prompts.
+     *
+     * @param string $fallbackurl Default logo URL.
+     * @return string
+     */
+    private function get_refine_content_logo_url(string $fallbackurl): string {
+        $systemcontext = \context_system::instance();
+        $fs = get_file_storage();
+        $files = $fs->get_area_files(
+            $systemcontext->id,
+            'aiplacement_contentgenerator',
+            'refinecontentlogo',
+            0,
+            'filename',
+            false
+        );
+
+        if (empty($files)) {
+            return $fallbackurl;
+        }
+
+        $file = reset($files);
+        if (!$file) {
+            return $fallbackurl;
+        }
+
+        return \moodle_url::make_pluginfile_url(
+            $file->get_contextid(),
+            $file->get_component(),
+            $file->get_filearea(),
+            $file->get_itemid(),
+            $file->get_filepath(),
+            $file->get_filename(),
+            false
+        )->out(false);
     }
 
     /**

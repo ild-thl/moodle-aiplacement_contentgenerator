@@ -40,3 +40,52 @@ function aiplacement_contentgenerator_extend_navigation_course(navigation_node $
         navigation_node::COURSE_INDEX_PAGE,
     );
 }
+
+/**
+ * File serving callback for plugin files.
+ *
+ * @param stdClass $course Course object.
+ * @param stdClass $cm Course module object.
+ * @param context $context Context.
+ * @param string $filearea File area.
+ * @param array $args Remaining file path arguments.
+ * @param bool $forcedownload Force download.
+ * @param array $options Additional options.
+ * @return void
+ */
+function aiplacement_contentgenerator_pluginfile(
+    $course,
+    $cm,
+    context $context,
+    string $filearea,
+    array $args,
+    bool $forcedownload,
+    array $options = []
+): void {
+    if ($context->contextlevel !== CONTEXT_SYSTEM) {
+        send_file_not_found();
+    }
+    if ($filearea !== 'refinecontentlogo') {
+        send_file_not_found();
+    }
+
+    require_login();
+    if (!is_siteadmin()) {
+        send_file_not_found();
+    }
+
+    $itemid = 0;
+    $filename = array_pop($args);
+    $filepath = '/';
+    if (!empty($args)) {
+        $filepath .= implode('/', $args).'/';
+    }
+
+    $fs = get_file_storage();
+    $file = $fs->get_file($context->id, 'aiplacement_contentgenerator', $filearea, $itemid, $filepath, $filename);
+    if (!$file || $file->is_directory()) {
+        send_file_not_found();
+    }
+
+    send_stored_file($file, 0, 0, $forcedownload, $options);
+}

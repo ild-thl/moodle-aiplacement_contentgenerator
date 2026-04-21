@@ -42,6 +42,22 @@ $string['pathtoffmpeg'] = 'Path to ffmpeg';
 $string['pathtoffmpeg_desc'] = 'Specify the full path to the ffmpeg executable. Leave this field empty to use the default installation.';
 $string['pathtopdftoppm'] = 'Path to pdftoppm';
 $string['pathtopdftoppm_desc'] = 'Specify the full path to the pdftoppm executable (poppler-utils). Leave this field empty to use the default installation.';
+$string['refinecontentsettings'] = 'Refine selected course content';
+$string['refinecontentsettings_desc'] = 'These settings control how selected course content is refined before slide generation.';
+$string['refinecontentprompttemplate'] = 'Refinement prompt template';
+$string['refinecontentprompttemplate_desc'] = 'Use placeholders {{additionalinstructions}}, {{content}}, and {{logo_url}}. {{additionalinstructions}} contains the additional instructions users can enter directly in the form when starting content generation. {{content}} contains the merged content from the selected course materials. {{logo_url}} contains the URL of the logo configured below.';
+$string['refinecontentprompttemplate_default'] = 'Please refine the following course content. Ensure that the content is well-organized, easy to understand, and suitable for educational slides.
+
+Additional user instructions:
+{{additionalinstructions}}
+
+If there are placeholders for the TH Luebeck logo, use this image URL: {{logo_url}}
+Ensure that there are no footer texts or page numbers included in the content.
+
+Course content:
+{{content}}';
+$string['refinecontentlogo'] = 'Logo for content refinement prompts';
+$string['refinecontentlogo_desc'] = 'Optional logo image used in the refinement prompt as {{logo_url}}. If empty, the default plugin logo URL is used.';
 $string['mail_content_generation_failed_subject'] = 'AI content generation failed';
 $string['mail_content_generation_failed_message'] = 'The AI content generation for your course has failed. The following errors occurred: {$a}';
 $string['mail_content_generation_failed_messagehtml'] = '<p>The AI content generation for your course has failed. The following errors occurred: {$a}</p>';
