@@ -40,4 +40,11 @@ if ($hassiteconfig) {
         new lang_string('pathtoffmpeg_desc', 'aiplacement_contentgenerator'),
         '/usr/bin/ffmpeg',
     ));
+
+    $settings->add(new admin_setting_configfile(
+        'aiplacement_contentgenerator/pathtopdftoppm',
+        new lang_string('pathtopdftoppm', 'aiplacement_contentgenerator'),
+        new lang_string('pathtopdftoppm_desc', 'aiplacement_contentgenerator'),
+        '/usr/bin/pdftoppm',
+    ));
 }

@@ -93,13 +93,19 @@ else if ($fromform) {
   }
 
   $sourcetexts = $helper->get_sourcetexts($mods);
-  $pdfimages = [];
-  $pdfimages = json_decode($fromform->pdfimages, true);
+  $pdffileids = [];
+  if (!empty($mods['mod_resource'])) {
+    foreach ($mods['mod_resource'] as $fileid) {
+      if ($helper->is_pdf_fileid((int)$fileid)) {
+        $pdffileids[] = (int)$fileid;
+      }
+    }
+  }
   $additionalinstructions = $fromform->additional_instructions;
 
-  // instanciate ad hoc task to process the pdf images in background
+  // Instantiate ad hoc task to process selected files in background.
   $generatecontenttask = \aiplacement_contentgenerator\task\generate_content::instance(
-      $pdfimages,
+      $pdffileids,
       $sourcetexts,
       $additionalinstructions,
       $course->id

@@ -28,6 +28,7 @@ The following tools must be installed on the Moodle server and executable by the
 - `ffmpeg` (video generation and merging)
 - `marp` / `@marp-team/marp-cli` (slide rendering)
 - `google-chrome` (headless browser required by Marp/Puppeteer)
+- `pdftoppm` from `poppler-utils` (server-side PDF page rendering)
 
 Recommended checks:
 
@@ -36,6 +37,7 @@ node --version
 /usr/local/bin/marp --version
 /usr/bin/ffmpeg -version
 which google-chrome
+which pdftoppm
 ```
 
 Note: In Linux deployments, the web server user (for example `www-data`) must be allowed to execute these binaries.
@@ -64,6 +66,8 @@ Configure the plugin in the plugin settings:
   Full path to the Marp executable (for example `/usr/local/bin/marp`)
 - `pathtoffmpeg`  
   Full path to the ffmpeg executable (for example `/usr/bin/ffmpeg`)
+- `pathtopdftoppm`  
+  Full path to the pdftoppm executable (for example `/usr/bin/pdftoppm`)
 - Additional plugin options according to `settings.php`
 
 Important:
@@ -118,8 +122,9 @@ For stable operation, at least the following model capabilities should be availa
 ## Operations and troubleshooting
 
 Typical checks when issues occur:
-- Are `pathtomarp` / `pathtoffmpeg` set correctly?
+- Are `pathtomarp` / `pathtoffmpeg` / `pathtopdftoppm` set correctly?
 - Is `google-chrome` available to the server user?
+- Is `pdftoppm` installed (poppler-utils) and executable by the server user?
 - Does the ad-hoc task run without timeout?
 - Are temporary directories writable/deletable?
 - Is the AI provider reachable and configured correctly?

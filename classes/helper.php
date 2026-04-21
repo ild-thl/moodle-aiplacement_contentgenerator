@@ -284,6 +284,131 @@ class helper {
     }
 
     /**
+     * Check whether a file id references a PDF file.
+     *
+     * @param int $fileid Moodle file id.
+     * @return bool
+     */
+    public function is_pdf_fileid($fileid) {
+        $fs = get_file_storage();
+        $file = $fs->get_file_by_id((int)$fileid);
+        if (!$file || $file->is_directory()) {
+            return false;
+        }
+        return $file->get_mimetype() === 'application/pdf';
+    }
+
+    /**
+     * Render selected PDF file ids to base64 PNG page images via poppler-utils (pdftoppm).
+     *
+     * @param array $pdffileids
+     * @return array{success:bool,pdfimages:array,result:string}
+     */
+    public function build_pdf_images_from_fileids($pdffileids) {
+        $result = [
+            'success' => true,
+            'pdfimages' => [],
+            'result' => ''
+        ];
+        $pdftoppm = get_config('aiplacement_contentgenerator', 'pathtopdftoppm');
+        if (empty($pdftoppm)) {
+            $pdftoppm = '/usr/bin/pdftoppm';
+        }
+        $pdftoppm = str_replace('\\', '/', $pdftoppm);
+        $pdftoppmcheck = shell_exec(escapeshellarg($pdftoppm).' -v 2>&1');
+        if ($pdftoppmcheck === null || stripos($pdftoppmcheck, 'pdftoppm version') === false) {
+            return [
+                'success' => false,
+                'pdfimages' => [],
+                'result' => 'PDF page rendering failed: pdftoppm (poppler-utils) is not installed or not executable at "'.$pdftoppm.'".'
+            ];
+        }
+
+        $fs = get_file_storage();
+        $processedfiles = 0;
+        $processedpages = 0;
+        $errors = [];
+
+        $tempbase = make_temp_directory('aiplacement_slides/pdf_render_'.uniqid());
+        $tempbase = str_replace('\\', '/', $tempbase);
+        $pdfworkdir = $tempbase.'/pdf';
+        $imgworkdir = $tempbase.'/img';
+        mkdir($pdfworkdir, 0777, true);
+        mkdir($imgworkdir, 0777, true);
+
+        foreach ($pdffileids as $fileid) {
+            $fileid = (int)$fileid;
+            if ($fileid <= 0) {
+                continue;
+            }
+            $file = $fs->get_file_by_id($fileid);
+            if (!$file || $file->is_directory()) {
+                $errors[] = 'File '.$fileid.' not found.';
+                continue;
+            }
+            if ($file->get_mimetype() !== 'application/pdf') {
+                continue;
+            }
+
+            $processedfiles++;
+            $pdffile = $pdfworkdir.'/file_'.$fileid.'.pdf';
+            file_put_contents($pdffile, $file->get_content());
+
+            $imageprefix = $imgworkdir.'/file_'.$fileid.'_page';
+            $cmd = escapeshellarg($pdftoppm).' -png '.escapeshellarg($pdffile).' '.escapeshellarg($imageprefix).' 2>&1';
+            $output = [];
+            $returnvar = 0;
+            exec($cmd, $output, $returnvar);
+            if ($returnvar !== 0) {
+                $errors[] = 'pdftoppm failed for file '.$fileid.' ('.$returnvar.'): '.implode("\n", $output);
+                continue;
+            }
+
+            $images = [];
+            $generatedfiles = glob($imageprefix.'-*.png');
+            if (!empty($generatedfiles)) {
+                natsort($generatedfiles);
+                foreach ($generatedfiles as $generatedfile) {
+                    $binary = file_get_contents($generatedfile);
+                    if ($binary === false) {
+                        continue;
+                    }
+                    $images[] = 'data:image/png;base64,'.base64_encode($binary);
+                    $processedpages++;
+                }
+            }
+            if (!empty($images)) {
+                $result['pdfimages'][$fileid] = $images;
+            } else {
+                $errors[] = 'No page images generated for file '.$fileid.'.';
+            }
+        }
+
+        // Cleanup conversion temp dir.
+        if (is_dir($tempbase)) {
+            $items = new \RecursiveIteratorIterator(
+                new \RecursiveDirectoryIterator($tempbase, \FilesystemIterator::SKIP_DOTS),
+                \RecursiveIteratorIterator::CHILD_FIRST
+            );
+            foreach ($items as $item) {
+                if ($item->isDir()) {
+                    @rmdir($item->getPathname());
+                } else {
+                    @unlink($item->getPathname());
+                }
+            }
+            @rmdir($tempbase);
+        }
+
+        if (!empty($errors)) {
+            $result['success'] = !empty($result['pdfimages']);
+        }
+        $result['result'] = 'Rendered PDF pages with pdftoppm: '.$processedfiles.' PDF files, '.$processedpages.
+            ' pages, '.count($errors).' errors.'.(!empty($errors) ? ' First error: '.$errors[0] : '');
+        return $result;
+    }
+
+    /**
      * Helper method for getting text from a text file
      * @param object $file: The file object to get the text from
      * @return string: The text from the text file or false on failure

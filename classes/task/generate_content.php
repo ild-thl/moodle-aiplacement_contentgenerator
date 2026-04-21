@@ -28,14 +28,14 @@ use core_availability\result;
 class generate_content extends \core\task\adhoc_task {
     
     public static function instance(
-        mixed $pdfimages,
+        mixed $pdffileids,
         mixed $sourcetexts,
         string $additionalinstructions,
         int $courseid
     ): self {
         $task = new self();
         $task->set_custom_data((object) [
-            'pdfimages' => $pdfimages,
+            'pdffileids' => $pdffileids,
             'sourcetexts' => $sourcetexts,
             'additionalinstructions' => $additionalinstructions,
             'courseid' => $courseid,
@@ -74,7 +74,19 @@ class generate_content extends \core\task\adhoc_task {
         // this may take a while...
         mtrace('Start processung PDFs');
         $processedpages = 0;
-        $result = $helper->process_pdfimages($data->pdfimages);
+        $pdfimages = [];
+        if (!empty($data->pdffileids)) {
+          $conversionresult = $helper->build_pdf_images_from_fileids((array)$data->pdffileids);
+          $results[] = $conversionresult['result'];
+          mtrace($conversionresult['result']);
+          if ($conversionresult['success'] === true) {
+            $pdfimages = $conversionresult['pdfimages'];
+          }
+          else {
+            $success = false;
+          }
+        }
+        $result = $helper->process_pdfimages($pdfimages);
         if ($result['success'] === true) {
           $coursecontent .= $result['extractedcontent'];
         } 
