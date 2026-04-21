@@ -25,6 +25,9 @@
 defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'aiplacement_contentgenerator';
-$plugin->version = 2025121700;
+$plugin->version = 2026042100;
 $plugin->requires = 2024100100;
+$plugin->dependencies = [
+    'aiprovider_myai' => 2026042100,
+];
 $plugin->maturity = MATURITY_STABLE;
