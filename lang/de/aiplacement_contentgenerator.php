@@ -113,9 +113,9 @@ class: follow
 $string['generatespeakertextsettings'] = 'Prompt-Einstellungen für Sprechertext-Generierung';
 $string['generatespeakertextsettings_desc'] = 'Konfigurieren Sie hier, wie aus Marp-Slides Sprechertexte erzeugt werden.';
 $string['generatespeakertextprompttemplate'] = 'Prompt-Template für Sprechertext-Generierung';
-$string['generatespeakertextprompttemplate_desc'] = 'Verwenden Sie den Platzhalter {{marp_slides}} für die generierten Marp-Slides.';
+$string['generatespeakertextprompttemplate_desc'] = 'Verwenden Sie den Platzhalter {{marp_slides}} für die generierten Marp-Slides. Die Markierung "New slide:" am Anfang jeder Folie im Sprechertext wird intern für die Audiogenerierung genutzt, damit für jede einzelne Folie eine Audiodatei erstellt werden kann, und ist deshalb sehr wichtig.';
 $string['generatespeakertextprompttemplate_default'] = "You are an expert in creating speaker texts for educational presentations.
-Please generate a speaker text for each slide in the presentation, provided later as marp slides. The speaker text should complement the slide content with additional explanations, context, and insights. Do not explain logos or decorative images. Focus on the educational content of each slide. Ensure that the speaker text is clear, engaging, and aligned with the content of each slide. Format the speaker text by clearly indicating which slide it corresponds to. Mark the beginning of each slide speaker text with 'New slide:'.
+Please generate a speaker text for each slide in the presentation, provided later as marp slides. The speaker text should complement the slide content with additional explanations, context, and insights. Do not explain logos or decorative images. Focus on the educational content of each slide. Ensure that the speaker text is clear, engaging, and aligned with the content of each slide. Format the speaker text by clearly indicating which slide it corresponds to. Mark the beginning of each slide in the speaker text with 'New slide:'.
 
 Marp slides:
 {{marp_slides}}";
