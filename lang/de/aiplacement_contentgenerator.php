@@ -34,6 +34,80 @@ $string['extractpdfsettings'] = 'Prompt-Einstellungen für PDF-Extraktion';
 $string['extractpdfsettings_desc'] = 'Das Prompt-Template für die PDF-Extraktion wird in den Einstellungen des AI-Provider-Plugins konfiguriert: <a href="{$a->url}">aiprovider_myai / extract_pdf</a>.';
 $string['generatetextsettings'] = 'Prompt-Einstellungen für Textgenerierung';
 $string['generatetextsettings_desc'] = 'Textgenerierung wird für mehrere Schritte benötigt, unter anderem für die Überarbeitung der Kursinhalte und die Erstellung der Marp-Slides. Konfigurieren Sie die Prompt-Templates in den Einstellungen des AI-Provider-Plugins: <a href="{$a->url}">aiprovider_myai / generate_text</a>.';
+$string['buildmarpslidessettings'] = 'Prompt-Einstellungen für die Marp-Slide-Erstellung';
+$string['buildmarpslidessettings_desc'] = 'Konfigurieren Sie hier, wie Marp-Slides aus den überarbeiteten Kursinhalten erzeugt werden.';
+$string['buildmarpslidesprompttemplate'] = 'Prompt-Template für Marp-Slide-Erstellung';
+$string['buildmarpslidesprompttemplate_desc'] = 'Verwenden Sie die Platzhalter {{numberofslides}}, {{marp_example}} und {{content}}. {{numberofslides}} enthält die berechnete Zielanzahl der Slides. {{marp_example}} enthält das Template aus dem Feld darunter. {{content}} enthält die überarbeiteten Kursinhalte.';
+$string['buildmarpslidesprompttemplate_default'] = 'You are an expert in creating educational presentations.
+Please create {{numberofslides}} MARP slides for course content, that will be provided later.
+Create 1 slide for each part of the content that is marked as \'Page X:\'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners. If the content for a slide is too long, split it into multiple slides as needed. It is important that the content fits well on each slide. Please make sure the slides are well-structured and visually appealing. Add 1 slide at the beginning as start slide. Add 1 slide at the end as closing slide with source references if applicable.
+
+Use the following MARP example as a template for the slide design and structure:
+{{marp_example}}
+
+Do not add unnecessary blank lines or spaces. Do not add any blank slides.
+
+Course Content:
+{{content}}';
+$string['buildmarpslidesexample'] = 'MARP-Beispieltemplate';
+$string['buildmarpslidesexample_desc'] = 'Beispieltemplate, das im Prompt als {{marp_example}} eingefügt wird.';
+$string['buildmarpslidesexample_default'] = '<!-- This part has to be at the beginning of the Marp file -->
+
+---
+
+marp: true
+style: |
+    section.lead {
+    border-bottom: 100px solid #e4003a;
+    padding-bottom: 110px;
+    }
+    section:not(.lead) {
+    border-bottom: 20px solid #e4003a;
+    padding-bottom: 20px;
+    }
+
+<!-- here starts the introduction slide  -->
+
+---
+
+<!--
+class: lead
+-->
+
+<img src="https://example.org/logo.png" alt="Logo" width="150" style="
+    position: absolute;
+    top: 30px;
+    right: 30px;">
+
+# Heading of the presentation
+
+<!-- here starts the first slide  -->
+
+---
+
+<!--
+class: follow
+-->
+
+# Heading of the first slide
+
+## Subheading of the first slide
+
+Text content for the first slide.
+
+- **First bullet point** example text.
+- **Second bullet point** example text.
+- **Third bullet point** example text.
+
+<!-- here starts the second slide and so on  -->
+
+---
+
+<!--
+class: follow
+-->
+
+# Heading of the second slide';
 $string['modselection'] = 'PDF-Inhalte für Inhaltsgenerierung auswählen';
 $string['mail_content_generated_subject'] = 'Videoeerstellung mit KI abgeschlossen';
 $string['mail_content_generated_message'] = 'Die Videoerstellung mit KI für Ihren Kurs wurde abgeschlossen. Sie finden das Video in Ihrem Bereich "Meine Dateien" in Ihrem Kurs: {$a->courselink}';

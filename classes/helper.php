@@ -626,75 +626,66 @@ class helper {
         $success = true;
         $slides = '';
         $result = [];
-        $marp_example = 
-        '<!-- This part has to be at the beginning of the Marp file -->
+        $marp_example = get_config('aiplacement_contentgenerator', 'buildmarpslidesexample');
+        if (empty(trim((string)$marp_example))) {
+            $marp_example = "<!-- This part has to be at the beginning of the Marp file -->\n\n".
+                "---\n\n".
+                "marp: true\n".
+                "style: |\n".
+                "    section.lead {\n".
+                "    border-bottom: 100px solid #e4003a;\n".
+                "    padding-bottom: 110px;\n".
+                "    }\n".
+                "    section:not(.lead) {\n".
+                "    border-bottom: 20px solid #e4003a;\n".
+                "    padding-bottom: 20px;\n".
+                "    }\n\n".
+                "<!-- here starts the introduction slide  -->\n\n".
+                "---\n\n".
+                "<!--\n".
+                "class: lead\n".
+                "-->\n\n".
+                "<img src=\"https://example.org/logo.png\" alt=\"Logo\" width=\"150\" style=\"\n".
+                "    position: absolute;\n".
+                "    top: 30px;\n".
+                "    right: 30px;\">\n\n".
+                "# Heading of the presentation\n\n".
+                "<!-- here starts the first slide  -->\n\n".
+                "---\n\n".
+                "<!--\n".
+                "class: follow\n".
+                "-->\n\n".
+                "# Heading of the first slide\n\n".
+                "## Subheading of the first slide\n\n".
+                "Text content for the first slide.\n\n".
+                "- **First bullet point** example text.\n".
+                "- **Second bullet point** example text.\n".
+                "- **Third bullet point** example text.\n\n".
+                "<!-- here starts the second slide and so on  -->\n\n".
+                "---\n\n".
+                "<!--\n".
+                "class: follow\n".
+                "-->\n\n".
+                "# Heading of the second slide";
+        }
 
-        ---
+        $prompttemplate = get_config('aiplacement_contentgenerator', 'buildmarpslidesprompttemplate');
+        if (empty(trim((string)$prompttemplate))) {
+            $prompttemplate = "You are an expert in creating educational presentations.\n".
+                "Please create {{numberofslides}} MARP slides for course content, that will be provided later.\n".
+                "Create 1 slide for each part of the content that is marked as 'Page X:'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners. ".
+                "If the content for a slide is too long, split it into multiple slides as needed. It is important that the content fits well on each slide. Please make sure the slides are well-structured and visually appealing. ".
+                "Add 1 slide at the beginning as start slide. Add 1 slide at the end as closing slide with source references if applicable.\n\n".
+                "Use the following MARP example as a template for the slide design and structure:\n{{marp_example}}\n".
+                "Do not add unnecessary blank lines or spaces. Do not add any blank slides.\n\n".
+                "Course Content:\n{{content}}";
+        }
 
-        marp: true
-        style: |
-            section.lead {
-            border-bottom: 100px solid #e4003a;
-            padding-bottom: 110px;
-            }
-            section:not(.lead) {
-            border-bottom: 20px solid #e4003a;
-            padding-bottom: 20px;
-            }
-
-<!-- here starts the introduction slide  -->
-
-        ---
-
-        <!--
-        class: lead
-        -->
-
-        <img src="http://localhost/moodle405kia/ai/placement/contentgenerator/pix/logo.png" alt="TH Lübeck Logo" width="150" style="
-            position: absolute;
-            top: 30px;
-            right: 30px;">
-
-        # Heading of the presentation
-
-<!-- here starts the first slide  -->
-
-        ---
-
-        <!--
-        class: follow
-        -->
-
-        # Heading of the first slide
-
-        ## Subheading of the first slide
-
-        Text content for the first slide.
-
-        - **First bullet point** example text.
-        - **Second bullet point** example text.  
-        - **Third bullet point** example text.
-
-<!-- here starts the second slide and so on  -->
-
-        ---
-
-        <!--
-        class: follow
-        -->
-
-        # Heading of the second slide';
-
-        $prompt = '';
-
-        $prompt .= "You are an expert in creating educational presentations.\n";
-        $prompt .= "Please create ".$numberofslides." MARP slides for course content, that will be provided later.\n";
-        $prompt .= "Create 1 slide for each part of the content that is marked as 'Page X:'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners. ";
-        $prompt .= "If the content for a slide is too long, split it into multiple slides as needed. It is important that the content fits well on each slide. Please make sure the slides are well-structured and visually appealing. ";
-        $prompt .= "Add 1 slide at the beginning as start slide. Add 1 slide at the end as closing slide with source references if applicable.\n";
-        $prompt .= "\n\nUse the following MARP example as a template for the slide design and structure:\n".$marp_example;
-        $prompt .="\nDo not add unnecessary blank lines or spaces. Do not add any blank slides.";
-        $prompt .="\n\nCourse Content:\n".$coursecontent;
+        $prompt = str_replace(
+            ['{{numberofslides}}', '{{marp_example}}', '{{content}}'],
+            [(string)$numberofslides, (string)$marp_example, (string)$coursecontent],
+            $prompttemplate
+        );
         $action = new \core_ai\aiactions\generate_text(
             contextid: $context->id,
             userid: $USER->id,

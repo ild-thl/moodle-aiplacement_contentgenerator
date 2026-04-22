@@ -34,6 +34,80 @@ $string['extractpdfsettings'] = 'Prompt settings for extracting PDF content';
 $string['extractpdfsettings_desc'] = 'The prompt template for PDF extraction is configured in the AI provider plugin settings: <a href="{$a->url}">aiprovider_myai / extract_pdf</a>.';
 $string['generatetextsettings'] = 'Prompt settings for text generation';
 $string['generatetextsettings_desc'] = 'Text generation is required for several steps, including the refining of course content and Marp slide generation. Configure the prompt templates in the AI provider plugin settings: <a href="{$a->url}">aiprovider_myai / generate_text</a>.';
+$string['buildmarpslidessettings'] = 'Prompt settings for Marp slide generation';
+$string['buildmarpslidessettings_desc'] = 'Configure how Marp slides are generated from refined course content.';
+$string['buildmarpslidesprompttemplate'] = 'Marp slide generation prompt template';
+$string['buildmarpslidesprompttemplate_desc'] = 'Use placeholders {{numberofslides}}, {{marp_example}}, and {{content}}. {{numberofslides}} contains the calculated target number of slides. {{marp_example}} contains the template from the setting below. {{content}} contains the refined course content.';
+$string['buildmarpslidesprompttemplate_default'] = 'You are an expert in creating educational presentations.
+Please create {{numberofslides}} MARP slides for course content, that will be provided later.
+Create 1 slide for each part of the content that is marked as \'Page X:\'. Use appropriate headings, bullet points, and visuals to enhance understanding. Format the slides using MARP syntax, ensuring clarity and engagement for learners. If the content for a slide is too long, split it into multiple slides as needed. It is important that the content fits well on each slide. Please make sure the slides are well-structured and visually appealing. Add 1 slide at the beginning as start slide. Add 1 slide at the end as closing slide with source references if applicable.
+
+Use the following MARP example as a template for the slide design and structure:
+{{marp_example}}
+
+Do not add unnecessary blank lines or spaces. Do not add any blank slides.
+
+Course Content:
+{{content}}';
+$string['buildmarpslidesexample'] = 'MARP example template';
+$string['buildmarpslidesexample_desc'] = 'Template example inserted into the Marp prompt as {{marp_example}}.';
+$string['buildmarpslidesexample_default'] = '<!-- This part has to be at the beginning of the Marp file -->
+
+---
+
+marp: true
+style: |
+    section.lead {
+    border-bottom: 100px solid #e4003a;
+    padding-bottom: 110px;
+    }
+    section:not(.lead) {
+    border-bottom: 20px solid #e4003a;
+    padding-bottom: 20px;
+    }
+
+<!-- here starts the introduction slide  -->
+
+---
+
+<!--
+class: lead
+-->
+
+<img src="https://example.org/logo.png" alt="Logo" width="150" style="
+    position: absolute;
+    top: 30px;
+    right: 30px;">
+
+# Heading of the presentation
+
+<!-- here starts the first slide  -->
+
+---
+
+<!--
+class: follow
+-->
+
+# Heading of the first slide
+
+## Subheading of the first slide
+
+Text content for the first slide.
+
+- **First bullet point** example text.
+- **Second bullet point** example text.
+- **Third bullet point** example text.
+
+<!-- here starts the second slide and so on  -->
+
+---
+
+<!--
+class: follow
+-->
+
+# Heading of the second slide';
 $string['mail_content_generated_subject'] = 'Your AI video creation is complete';
 $string['mail_content_generated_message'] = 'The AI video creation for your course has been completed. You can find the video in your "My files"-area in your course: {$a->courselink}';
 $string['mail_content_generated_messagehtml'] = '<p>The AI content generation for your course has been completed.</p><p>You can find the video in your "My files"-area in your course: <a href="{$a->courselink}">Course Page</a></p>';

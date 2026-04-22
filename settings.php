@@ -103,4 +103,30 @@ if ($hassiteconfig) {
             'accepted_types' => ['.png', '.jpg', '.jpeg', '.webp', '.gif'],
         ]
     ));
+
+    $settings->add(new admin_setting_heading(
+        'aiplacement_contentgenerator/buildmarpslidessettings',
+        new lang_string('buildmarpslidessettings', 'aiplacement_contentgenerator'),
+        new lang_string('buildmarpslidessettings_desc', 'aiplacement_contentgenerator')
+    ));
+
+    $settings->add(new admin_setting_configtextarea(
+        'aiplacement_contentgenerator/buildmarpslidesprompttemplate',
+        new lang_string('buildmarpslidesprompttemplate', 'aiplacement_contentgenerator'),
+        new lang_string('buildmarpslidesprompttemplate_desc', 'aiplacement_contentgenerator'),
+        new lang_string('buildmarpslidesprompttemplate_default', 'aiplacement_contentgenerator'),
+        PARAM_RAW,
+        12,
+        10
+    ));
+
+    $settings->add(new admin_setting_configtextarea(
+        'aiplacement_contentgenerator/buildmarpslidesexample',
+        new lang_string('buildmarpslidesexample', 'aiplacement_contentgenerator'),
+        new lang_string('buildmarpslidesexample_desc', 'aiplacement_contentgenerator'),
+        new lang_string('buildmarpslidesexample_default', 'aiplacement_contentgenerator'),
+        PARAM_RAW,
+        20,
+        10
+    ));
 }
