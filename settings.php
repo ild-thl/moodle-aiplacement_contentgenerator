@@ -30,6 +30,9 @@ if ($hassiteconfig) {
     $extractpdfsettingsurl = (new moodle_url('/admin/settings.php', [
         'section' => 'aiprovider_myai_extract_pdf',
     ]))->out(false);
+    $generatetextsettingsurl = (new moodle_url('/admin/settings.php', [
+        'section' => 'aiprovider_myai_generate_text',
+    ]))->out(false);
 
     $settings->add(new admin_setting_configfile(
         'aiplacement_contentgenerator/pathtomarp',
@@ -60,6 +63,16 @@ if ($hassiteconfig) {
             'extractpdfsettings_desc',
             'aiplacement_contentgenerator',
             (object)['url' => $extractpdfsettingsurl]
+        )
+    ));
+
+    $settings->add(new admin_setting_heading(
+        'aiplacement_contentgenerator/generatetextsettings',
+        new lang_string('generatetextsettings', 'aiplacement_contentgenerator'),
+        new lang_string(
+            'generatetextsettings_desc',
+            'aiplacement_contentgenerator',
+            (object)['url' => $generatetextsettingsurl]
         )
     ));
 
