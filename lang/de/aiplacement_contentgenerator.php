@@ -51,7 +51,7 @@ $string['refinecontentprompttemplate_default'] = 'Please refine the following co
 Additional user instructions:
 {{additionalinstructions}}
 
-If there are placeholders for the TH Luebeck logo, use this image URL: {{logo_url}}
+If there are placeholders for a logo, use this image URL: {{logo_url}}
 Ensure that there are no footer texts or page numbers included in the content.
 
 Course content:
