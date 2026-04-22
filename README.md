@@ -85,6 +85,44 @@ Important:
 - If errors occur, check task logs (`mtrace`) and configured system paths first.
 - The form submits only selected file IDs; large PDF payloads are not posted from the browser.
 
+## Course usage (step by step)
+
+### 1) Open the plugin in the course
+1. Open the course.
+2. Click **More** in the top navigation.
+3. Select **Generate AI content**.
+
+### 2) Select content for generation
+1. In the form, select the desired course content (for example files/PDFs, pages, labels).
+2. Optionally enter additional instructions (this text is used in the refinement prompt as `{{additionalinstructions}}`).
+3. Click **Generate AI content**.
+
+### 3) What happens immediately after clicking
+1. The plugin creates an asynchronous Moodle ad-hoc task.
+2. The page shows a confirmation that generation has started.
+3. The user can continue working in the course while processing runs in the background.
+
+### 4) What happens in the background
+1. Selected content is collected and merged.
+2. PDF files are converted to images server-side (`pdftoppm`) and included in the text pipeline.
+3. Content is refined with AI (refinement step).
+4. Marp slides are generated from the refined content.
+5. Marp renders slides into images.
+6. AI generates speaker text for each slide.
+7. TTS generates one audio file per slide.
+8. `ffmpeg` builds slide video segments and merges them into a final video.
+9. Temporary files are cleaned up afterwards.
+
+### 5) E-mail notification
+1. After completion, Moodle sends an e-mail to the user who started the process.
+2. On success, the e-mail confirms that generation has finished.
+3. On failure, the e-mail contains a structured error summary.
+
+### 6) Where to find the generated video
+1. The final video is stored in the user file area.
+2. In the current workflow, it is placed in **Private files** of the initiating user.
+3. The completion e-mail references the course context; the file itself is available in the user file area.
+
 ## Technical flow (simplified)
 
 1. Extract/aggregate source content
