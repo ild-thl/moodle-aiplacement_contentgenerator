@@ -176,7 +176,7 @@ class generate_content extends \core\task\adhoc_task {
         // generate audio from speaker text
         if ($success) {
           mtrace('Start generating audio from speaker text with AI.');
-          $result = $helper->generate_audio($speakertext, $contentid, $context);
+          $result = $helper->generate_audio($speakertext, $contentid);
           if ($result['success'] === true) {
             $audiodir = $result['audiodir'];
           }

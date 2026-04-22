@@ -831,10 +831,11 @@ class helper {
      * @param string $texttotransform: The texts to transform into audio
      * @return array: An array with success status and audio file path
      */
-    public function generate_audio($texttotransform, $contentid, $context) {
+    public function generate_audio($texttotransform, $contentid) {
         $success = true;
         $result = [];
         $errorcount = 0;
+        $errors = [];
 
         // $texttotransform contains multiple texts. Each text starts with "New slide:".
         // add each text to an array
@@ -846,8 +847,10 @@ class helper {
         
         $audiodir = make_temp_directory('aiplacement_slides/audio_'.$contentid);
         $fileindex = 0;
+        $slideindex = 0;
         foreach ($texts as $text) {
-            $result = \aiplacement_contentgenerator\placement::text_to_speech($text, $context);
+            $slideindex++;
+            $result = \aiplacement_contentgenerator\placement::text_to_speech($text);
             if ($result['success']) {
                 $fileindex++;
                 $audio = $result['generatedcontent'];
@@ -857,12 +860,24 @@ class helper {
             else {
                 $errorcount++;
                 $success = false;
+                $errorcode = (int)($result['errorcode'] ?? 0);
+                $errormessage = trim((string)($result['error'] ?? ''));
+                if ($errormessage === '') {
+                    $errormessage = 'Unknown error during text-to-speech generation.';
+                }
+                $errors[] = 'Slide '.$slideindex.' failed ('.$errorcode.'): '.$errormessage;
+            }
+        }
+        if (!empty($errors)) {
+            foreach ($errors as $error) {
+                mtrace($error);
             }
         }
         $result = [
             'success' => $success,
             'audiodir' => $audiodir,
-            'result' => 'Audio generation success: '.$fileindex.' audio files created. Errors: '.$errorcount
+            'result' => 'Audio generation success: '.$fileindex.' audio files created. Errors: '.$errorcount.
+                (!empty($errors) ? ' First error: '.$errors[0] : '')
         ];
 
         return $result;
