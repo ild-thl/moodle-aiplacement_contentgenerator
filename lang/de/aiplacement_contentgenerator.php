@@ -108,6 +108,15 @@ class: follow
 -->
 
 # Heading of the second slide';
+$string['generatespeakertextsettings'] = 'Prompt-Einstellungen für Sprechertext-Generierung';
+$string['generatespeakertextsettings_desc'] = 'Konfigurieren Sie hier, wie aus Marp-Slides Sprechertexte erzeugt werden.';
+$string['generatespeakertextprompttemplate'] = 'Prompt-Template für Sprechertext-Generierung';
+$string['generatespeakertextprompttemplate_desc'] = 'Verwenden Sie den Platzhalter {{marp_slides}} für die generierten Marp-Slides.';
+$string['generatespeakertextprompttemplate_default'] = "You are an expert in creating speaker texts for educational presentations.
+Please generate a speaker text for each slide in the presentation, provided later as marp slides. The speaker text should complement the slide content with additional explanations, context, and insights. Do not explain logos or decorative images. Focus on the educational content of each slide. Ensure that the speaker text is clear, engaging, and aligned with the content of each slide. Format the speaker text by clearly indicating which slide it corresponds to. Mark the beginning of each slide speaker text with 'New slide:'.
+
+Marp slides:
+{{marp_slides}}";
 $string['modselection'] = 'PDF-Inhalte für Inhaltsgenerierung auswählen';
 $string['mail_content_generated_subject'] = 'Videoeerstellung mit KI abgeschlossen';
 $string['mail_content_generated_message'] = 'Die Videoerstellung mit KI für Ihren Kurs wurde abgeschlossen. Sie finden das Video in Ihrem Bereich "Meine Dateien" in Ihrem Kurs: {$a->courselink}';

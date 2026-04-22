@@ -108,6 +108,15 @@ class: follow
 -->
 
 # Heading of the second slide';
+$string['generatespeakertextsettings'] = 'Prompt settings for speaker text generation';
+$string['generatespeakertextsettings_desc'] = 'Configure how speaker text is generated from Marp slides.';
+$string['generatespeakertextprompttemplate'] = 'Speaker text generation prompt template';
+$string['generatespeakertextprompttemplate_desc'] = 'Use placeholder {{marp_slides}} for the generated Marp slides.';
+$string['generatespeakertextprompttemplate_default'] = "You are an expert in creating speaker texts for educational presentations.
+Please generate a speaker text for each slide in the presentation, provided later as marp slides. The speaker text should complement the slide content with additional explanations, context, and insights. Do not explain logos or decorative images. Focus on the educational content of each slide. Ensure that the speaker text is clear, engaging, and aligned with the content of each slide. Format the speaker text by clearly indicating which slide it corresponds to. Mark the beginning of each slide speaker text with 'New slide:'.
+
+Marp slides:
+{{marp_slides}}";
 $string['mail_content_generated_subject'] = 'Your AI video creation is complete';
 $string['mail_content_generated_message'] = 'The AI video creation for your course has been completed. You can find the video in your "My files"-area in your course: {$a->courselink}';
 $string['mail_content_generated_messagehtml'] = '<p>The AI content generation for your course has been completed.</p><p>You can find the video in your "My files"-area in your course: <a href="{$a->courselink}">Course Page</a></p>';

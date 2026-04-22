@@ -129,4 +129,20 @@ if ($hassiteconfig) {
         20,
         10
     ));
+
+    $settings->add(new admin_setting_heading(
+        'aiplacement_contentgenerator/generatespeakertextsettings',
+        new lang_string('generatespeakertextsettings', 'aiplacement_contentgenerator'),
+        new lang_string('generatespeakertextsettings_desc', 'aiplacement_contentgenerator')
+    ));
+
+    $settings->add(new admin_setting_configtextarea(
+        'aiplacement_contentgenerator/generatespeakertextprompttemplate',
+        new lang_string('generatespeakertextprompttemplate', 'aiplacement_contentgenerator'),
+        new lang_string('generatespeakertextprompttemplate_desc', 'aiplacement_contentgenerator'),
+        new lang_string('generatespeakertextprompttemplate_default', 'aiplacement_contentgenerator'),
+        PARAM_RAW,
+        12,
+        10
+    ));
 }
