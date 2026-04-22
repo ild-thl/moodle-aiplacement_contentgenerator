@@ -34,6 +34,8 @@ $string['extractpdfsettings'] = 'Prompt-Einstellungen für PDF-Extraktion';
 $string['extractpdfsettings_desc'] = 'Das Prompt-Template für die PDF-Extraktion wird in den Einstellungen des AI-Provider-Plugins konfiguriert: <a href="{$a->url}">aiprovider_myai / extract_pdf</a>.';
 $string['generatetextsettings'] = 'Prompt-Einstellungen für Textgenerierung';
 $string['generatetextsettings_desc'] = 'Textgenerierung wird für mehrere Schritte benötigt, unter anderem für die Überarbeitung der Kursinhalte und die Erstellung der Marp-Slides. Konfigurieren Sie die Prompt-Templates in den Einstellungen des AI-Provider-Plugins: <a href="{$a->url}">aiprovider_myai / generate_text</a>.';
+$string['generateaudiosettings'] = 'Einstellungen für Audio-Generierung';
+$string['generateaudiosettings_desc'] = 'Die Generierung der Audiospur für das Video wird in den Einstellungen des AI-Provider-Plugins konfiguriert: <a href="{$a->url}">aiprovider_myai / text_to_speech</a>.';
 $string['buildmarpslidessettings'] = 'Prompt-Einstellungen für die Marp-Slide-Erstellung';
 $string['buildmarpslidessettings_desc'] = 'Konfigurieren Sie hier, wie Marp-Slides aus den überarbeiteten Kursinhalten erzeugt werden.';
 $string['buildmarpslidesprompttemplate'] = 'Prompt-Template für Marp-Slide-Erstellung';

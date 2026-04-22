@@ -145,7 +145,6 @@ class generate_content extends \core\task\adhoc_task {
         // Todo: validate Marp content syntax and refine it again if necessary
 
         // render Marp slides to Images
-        // use local marp installation
         if ($success) {
           mtrace('Start rendering Marp slides to images.');
           $result = $helper->render_images_from_marp_slides($marp_slides);
@@ -161,7 +160,6 @@ class generate_content extends \core\task\adhoc_task {
         }
 
         // generate speaker text for each Marp slide
-        // use action: generate_text
         if ($success) {
           mtrace('Start generating speaker text for each slide with AI.');
           $result = $helper->generate_speaker_text($marp_slides, $context);

@@ -34,6 +34,8 @@ $string['extractpdfsettings'] = 'Prompt settings for extracting PDF content';
 $string['extractpdfsettings_desc'] = 'The prompt template for PDF extraction is configured in the AI provider plugin settings: <a href="{$a->url}">aiprovider_myai / extract_pdf</a>.';
 $string['generatetextsettings'] = 'Prompt settings for text generation';
 $string['generatetextsettings_desc'] = 'Text generation is required for several steps, including the refining of course content and Marp slide generation. Configure the prompt templates in the AI provider plugin settings: <a href="{$a->url}">aiprovider_myai / generate_text</a>.';
+$string['generateaudiosettings'] = 'Settings for audio generation';
+$string['generateaudiosettings_desc'] = 'The settings for generating the video audio track are configured in the AI provider plugin settings: <a href="{$a->url}">aiprovider_myai / text_to_speech</a>.';
 $string['buildmarpslidessettings'] = 'Prompt settings for Marp slide generation';
 $string['buildmarpslidessettings_desc'] = 'Configure how Marp slides are generated from refined course content.';
 $string['buildmarpslidesprompttemplate'] = 'Marp slide generation prompt template';

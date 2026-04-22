@@ -33,6 +33,9 @@ if ($hassiteconfig) {
     $generatetextsettingsurl = (new moodle_url('/admin/settings.php', [
         'section' => 'aiprovider_myai_generate_text',
     ]))->out(false);
+    $texttospeechsettingsurl = (new moodle_url('/admin/settings.php', [
+        'section' => 'aiprovider_myai_text_to_speech',
+    ]))->out(false);
 
     $settings->add(new admin_setting_configfile(
         'aiplacement_contentgenerator/pathtomarp',
@@ -73,6 +76,16 @@ if ($hassiteconfig) {
             'generatetextsettings_desc',
             'aiplacement_contentgenerator',
             (object)['url' => $generatetextsettingsurl]
+        )
+    ));
+
+    $settings->add(new admin_setting_heading(
+        'aiplacement_contentgenerator/generateaudiosettings',
+        new lang_string('generateaudiosettings', 'aiplacement_contentgenerator'),
+        new lang_string(
+            'generateaudiosettings_desc',
+            'aiplacement_contentgenerator',
+            (object)['url' => $texttospeechsettingsurl]
         )
     ));
 
