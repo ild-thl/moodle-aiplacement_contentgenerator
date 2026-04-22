@@ -30,6 +30,8 @@ $string['error_nocontentselected'] = 'Please select at least one content module 
 $string['extract_pdf'] = 'Extract PDF content';
 $string['extract_pdf_setting'] = 'Enable PDF content extraction';
 $string['extract_pdf_setting_desc'] = 'If enabled, users can extract text content from PDF files using AI.';
+$string['extractpdfsettings'] = 'Prompt settings for extracting PDF content';
+$string['extractpdfsettings_desc'] = 'The prompt template for PDF extraction is configured in the AI provider plugin settings: <a href="{$a->url}">aiprovider_myai / extract_pdf</a>.';
 $string['mail_content_generated_subject'] = 'Your AI video creation is complete';
 $string['mail_content_generated_message'] = 'The AI video creation for your course has been completed. You can find the video in your "My files"-area in your course: {$a->courselink}';
 $string['mail_content_generated_messagehtml'] = '<p>The AI content generation for your course has been completed.</p><p>You can find the video in your "My files"-area in your course: <a href="{$a->courselink}">Course Page</a></p>';

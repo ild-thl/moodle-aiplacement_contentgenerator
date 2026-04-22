@@ -30,6 +30,8 @@ $string['error_nocontentselected'] = 'Bitte wähle mindestens ein Inhaltsmodul f
 $string['extract_pdf'] = 'PDF-Inhalte extrahieren';
 $string['extract_pdf_setting'] = 'PDF-Inhaltsextraktion aktivieren';
 $string['extract_pdf_setting_desc'] = 'Wenn aktiviert, können Benutzer Textinhalte aus PDF-Dateien mithilfe von KI extrahieren.';
+$string['extractpdfsettings'] = 'Prompt-Einstellungen für PDF-Extraktion';
+$string['extractpdfsettings_desc'] = 'Das Prompt-Template für die PDF-Extraktion wird in den Einstellungen des AI-Provider-Plugins konfiguriert: <a href="{$a->url}">aiprovider_myai / extract_pdf</a>.';
 $string['modselection'] = 'PDF-Inhalte für Inhaltsgenerierung auswählen';
 $string['mail_content_generated_subject'] = 'Videoeerstellung mit KI abgeschlossen';
 $string['mail_content_generated_message'] = 'Die Videoerstellung mit KI für Ihren Kurs wurde abgeschlossen. Sie finden das Video in Ihrem Bereich "Meine Dateien" in Ihrem Kurs: {$a->courselink}';

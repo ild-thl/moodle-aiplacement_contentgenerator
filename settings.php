@@ -27,6 +27,10 @@ use core_ai\admin\admin_settingspage_placement;
 defined('MOODLE_INTERNAL') || die();
 
 if ($hassiteconfig) {
+    $extractpdfsettingsurl = (new moodle_url('/admin/settings.php', [
+        'section' => 'aiprovider_myai_extract_pdf',
+    ]))->out(false);
+
     $settings->add(new admin_setting_configfile(
         'aiplacement_contentgenerator/pathtomarp',
          new lang_string('pathtomarp', 'aiplacement_contentgenerator'),
@@ -46,6 +50,17 @@ if ($hassiteconfig) {
         new lang_string('pathtopdftoppm', 'aiplacement_contentgenerator'),
         new lang_string('pathtopdftoppm_desc', 'aiplacement_contentgenerator'),
         '/usr/bin/pdftoppm',
+    ));
+
+    // Header for extract pdf settings with link to prompt template in aiprovider_myai settings so users can configure the prompt template
+    $settings->add(new admin_setting_heading(
+        'aiplacement_contentgenerator/extractpdfsettings',
+        new lang_string('extractpdfsettings', 'aiplacement_contentgenerator'),
+        new lang_string(
+            'extractpdfsettings_desc',
+            'aiplacement_contentgenerator',
+            (object)['url' => $extractpdfsettingsurl]
+        )
     ));
 
     $settings->add(new admin_setting_heading(
