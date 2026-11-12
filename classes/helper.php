@@ -736,20 +736,20 @@ class helper {
         $temphomedirarg = escapeshellarg($temphomedir);
 
         if (stripos(PHP_OS, 'WIN') === 0) {
-            // Windows specific command
-            $cmd = "$pathtomarp $mdfile --images png --image-scale 2 --allow-local-files --output $imagefilename < nul > nul 2>&1";
+            // Windows specific command.
+            // Marp honours CHROME_NO_SANDBOX; it does not forward --no-sandbox to Chrome.
+            $cmd = "set CHROME_NO_SANDBOX=1&& set CHROME_DISABLE_GPU=1&& ".
+                "$pathtomarp $mdfile --images png --image-scale 2 --allow-local-files ".
+                "--output $imagefilename < nul 2>&1";
         } else {
-            // Unix/Linux specific command
-            // In non-interactive contexts Marp may wait for stdin.
-            $cmd = "HOME=$temphomedirarg $pathtomarp $mdfilearg --images png --image-scale 2 ".
+            // Unix/Linux specific command.
+            // PHP-FPM blocks user namespaces, so Chrome's zygote sandbox exits at once.
+            // Marp disables that sandbox only when CHROME_NO_SANDBOX is set.
+            $cmd = "CHROME_NO_SANDBOX=1 CHROME_DISABLE_GPU=1 HOME=$temphomedirarg ".
+                "$pathtomarp $mdfilearg --images png --image-scale 2 ".
                 "--allow-local-files ".
-                "--no-sandbox ".
-                "--disable-gpu ".
-                "--disable-dev-shm-usage ".
-                "--headless ".
-                "--no-stdin ".
                 "--output $imagefilenamearg ".
-                "</dev/null";
+                "</dev/null 2>&1";
         }
         
         $output = [];
